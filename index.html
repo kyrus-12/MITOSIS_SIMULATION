@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1020">
 <title>Mitosis</title>
 <style>
 :root{--bg:#f4f6fc;--fg:#141a33;--muted:#5b6585;--panel:#fff;--line:#d5dbee;--cell:#eaf0ff;--cellline:#8a97c4;--nuc:#0284c7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -42,6 +44,14 @@ footer{padding:6px 12px 12px;text-align:center}
   </div>
 </footer>
 <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registered!'))
+      .catch(err => console.error('Service Worker registration failed:', err));
+  });
+}
+  
 const $=s=>document.querySelector(s), lerp=(a,b,k)=>a+(b-a)*k;
 const PH=[
  {n:'Interphase',c:'#38bdf8',t:'DNA is copied, so every chromosome now has two identical sister chromatids.'},
