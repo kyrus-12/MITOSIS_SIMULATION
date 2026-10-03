@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mitosis</title>
+<style>
+:root{--bg:#f4f6fc;--fg:#141a33;--muted:#5b6585;--panel:#fff;--line:#d5dbee;--cell:#eaf0ff;--cellline:#8a97c4;--nuc:#0284c7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1020;--fg:#e8ecf8;--muted:#8d97b5;--panel:#151c33;--line:#2a3354;--cell:#101830;--cellline:#56628f;--nuc:#38bdf8}}
+:root[data-theme="dark"]{--bg:#0b1020;--fg:#e8ecf8;--muted:#8d97b5;--panel:#151c33;--line:#2a3354;--cell:#101830;--cellline:#56628f;--nuc:#38bdf8}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+.steps{display:flex;gap:6px;padding:10px 10px 6px}
+.step{flex:1;min-width:0;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:12px;padding:8px 2px;font:600 clamp(10px,2.8vw,14px) inherit;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .3s}
+.step i{width:8px;height:8px;border-radius:50%;background:var(--c);opacity:.5;transition:all .3s;font-style:normal}
+.step.on{color:var(--fg);border-color:var(--c);background:color-mix(in srgb,var(--c) 20%,var(--panel))}
+.step.on i{opacity:1;box-shadow:0 0 10px var(--c);transform:scale(1.4)}
+main{flex:1;min-height:0;position:relative}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:manipulation}
+footer{padding:6px 12px 12px;text-align:center}
+#cap{margin:0 auto 8px;max-width:640px;font-size:clamp(13px,3.6vw,15px);line-height:1.4}
+#cap b{display:block;font-size:1.15em;margin-bottom:2px}
+#cap small{display:block;color:var(--muted);margin-top:3px}
+.ctrl{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:10px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer}
+.btn:active{transform:scale(.96)}
+.btn.main{background:#6366f1;border-color:#6366f1;color:#fff}
+.cnt{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.cnt .btn{padding:6px 11px}
+</style>
+</head>
+<body>
+<div class="steps" id="steps"></div>
+<main><canvas id="c"></canvas></main>
+<footer>
+  <p id="cap"></p>
+  <div class="ctrl">
+    <button class="btn" id="prev">◀ Back</button>
+    <button class="btn main" id="play">▶ Play</button>
+    <button class="btn" id="next">Next ▶</button>
+    <span class="cnt"><button class="btn" id="minus">−</button><span id="cnt"></span><button class="btn" id="plus">+</button></span>
+  </div>
+</footer>
+<script>
+const $=s=>document.querySelector(s), lerp=(a,b,k)=>a+(b-a)*k;
+const PH=[
+ {n:'Interphase',c:'#38bdf8',t:'DNA is copied, so every chromosome now has two identical sister chromatids.'},
+ {n:'Prophase',c:'#a78bfa',t:'Chromatin coils into X-shaped chromosomes. The nuclear envelope fades and the spindle poles move apart.'},
+ {n:'Metaphase',c:'#f472b6',t:'Spindle fibres line every chromosome up along the cell\u2019s equator.'},
+ {n:'Anaphase',c:'#fb923c',t:'Sister chromatids split and are pulled to opposite poles.'},
+ {n:'Telophase',c:'#34d399',t:'Two nuclei re-form and the cell pinches in two (cytokinesis).'}
+];
+const HUE=[330,200,265,155,40], AN=[.5,2.4,4.1,1.3,5.3], RR=[.55,.75,.5,.85,.45], ROT=[.6,2.2,1.1,2.9,.2];
+let n=3, phase=0, sel=0, timer=null, W=0, H=0, R=100, cur=null, t=0, last=performance.now();
+const cvs=$('#c'), ctx=cvs.getContext('2d');
+
+// UI
+const stepsEl=$('#steps');
+PH.forEach((p,i)=>{const b=document.createElement('button');b.className='step';b.style.setProperty('--c',p.c);b.innerHTML='<i></i>'+p.n;b.onclick=()=>setPhase(i);stepsEl.appendChild(b)});
+function setPhase(p){
+  phase=(p+5)%5;
+  [...stepsEl.children].forEach((b,i)=>b.classList.toggle('on',i===phase));
+  $('#cap').innerHTML='<b style="color:'+PH[phase].c+'">'+PH[phase].n+'</b>'+PH[phase].t+'<small>Tap a chromosome to follow it.</small>';
+}
+$('#prev').onclick=()=>setPhase(phase-1);
+$('#next').onclick=()=>setPhase(phase+1);
+$('#play').onclick=()=>{
+  if(timer){clearInterval(timer);timer=null;$('#play').textContent='▶ Play'}
+  else{$('#play').textContent='❚❚ Pause';timer=setInterval(()=>setPhase(phase+1),4200)}
+};
+function setN(v){n=Math.max(2,Math.min(5,v));if(sel>=n)sel=n-1;cur=null;$('#cnt').textContent='Chromosomes: '+n}
+$('#minus').onclick=()=>setN(n-1);
+$('#plus').onclick=()=>setN(n+1);
+
+// Layout
+new ResizeObserver(()=>{
+  const r=cvs.parentElement.getBoundingClientRect(), d=window.devicePixelRatio||1;
+  W=r.width;H=r.height;cvs.width=W*d;cvs.height=H*d;ctx.setTransform(d,0,0,d,0,0);
+  R=Math.max(40,Math.min(W/3.3,H/2.25));
+}).observe(cvs.parentElement);
+
+// Targets for each phase
+function mk(x,y,L,w,wave,ang,tx,bx){return{x,y,L,w,wave,ang,tx,bx}}
+function target(ph){
+  const cx=W/2, cy=H/2, u=R;
+  const cell=[[u,u,0],[u,u,0],[u,u,0],[1.28*u,.96*u,.1],[1.5*u,.88*u,.8]][ph];
+  const T={n,a:cell[0],b:cell[1],p:cell[2],pole:[.1,.8,.9,.9,.9][ph],spin:[0,.6,1,1,0][ph],
+    n1:[1,.3,0,0,1][ph],n2:ph==4?1:0,nOff:ph==4?.72*u:0,nr:ph==4?.38*u:.64*u,ch:[]};
+  for(let i=0;i<n;i++){
+    let A,B;
+    const row=(i-(n-1)/2)*.4*u;
+    if(ph<2){
+      const k=ph==0?.42:.5, px=cx+Math.cos(AN[i])*RR[i]*k*u, py=cy+Math.sin(AN[i])*RR[i]*k*u, L=.3*u;
+      const w=Math.max(ph?5:2.5,u*(ph?.035:.016)), wave=ph?.25:1, o=ph?0:.025*u, x=ph?.18*L:0;
+      A=mk(px-o,py,L,w,wave,ROT[i],-x,x); B=mk(px+o,py,L,w,wave,ROT[i],x,-x);
+    }else if(ph==2){
+      const L=.28*u,w=Math.max(5,u*.035);
+      A=mk(cx,cy+row,L,w,0,0,-.18*L,.18*L); B=mk(cx,cy+row,L,w,0,0,.18*L,-.18*L);
+    }else if(ph==3){
+      const L=.28*u,w=Math.max(5,u*.035);
+      A=mk(cx-.6*u,cy+row*.9,L,w,0,0,.32*L,.32*L); B=mk(cx+.6*u,cy+row*.9,L,w,0,0,-.32*L,-.32*L);
+    }else{
+      const L=.2*u,w=Math.max(3,u*.022), sx=n>1?Math.cos(Math.PI*2*i/n)*.17*u:0, sy=n>1?Math.sin(Math.PI*2*i/n)*.17*u:0;
+      A=mk(cx-.72*u+sx,cy+sy,L,w,.7,ROT[i],0,0); B=mk(cx+.72*u+sx,cy+sy,L,w,.7,ROT[i],0,0);
+    }
+    T.ch.push([A,B]);
+  }
+  return T;
+}
+const SK=['a','b','p','pole','spin','n1','n2','nOff','nr'], CK=['x','y','tx','bx','L','w','wave','ang'];
+
+// Drawing
+function cellPath(cx,cy,a,b,p){
+  ctx.beginPath();
+  for(let i=0;i<=90;i++){
+    const th=i/90*Math.PI*2, s=Math.sin(th), y=b*s*(1-p*Math.pow(Math.abs(s),8)), x=a*Math.cos(th);
+    i?ctx.lineTo(cx+x,cy+y):ctx.moveTo(cx+x,cy+y);
+  }
+  ctx.closePath();
+}
+function drift(i,k){const s=phase<2?1:.35;return[Math.sin(t*.9+i*1.7+k*2)*.012*R*s,Math.cos(t*.8+i*2.3+k)*.012*R*s]}
+function chromatid(c,i,k,hl,dim){
+  const col='hsl('+HUE[i]+' '+(k?85:80)+'% '+(k?74:62)+'%)', [dx,dy]=drift(i,k);
+  ctx.save();ctx.globalAlpha=dim?.4:1;
+  ctx.translate(c.x+dx,c.y+dy);ctx.rotate(c.ang);
+  const N=22,amp=c.wave*c.L*.16,ph=i*2+k*1.3;
+  ctx.beginPath();
+  for(let s=0;s<=N;s++){
+    const q=s/N;let x,y;
+    if(q<.5){const f=q*2;x=lerp(c.tx,0,f);y=lerp(-c.L/2,0,f)}else{const f=(q-.5)*2;x=lerp(0,c.bx,f);y=lerp(0,c.L/2,f)}
+    const e=Math.sin(Math.PI*q);
+    x+=Math.sin(q*13+ph+t*2.2)*amp*e;y+=Math.cos(q*9+ph*1.3+t*1.7)*amp*.6*e;
+    s?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  }
+  ctx.lineCap=ctx.lineJoin='round';
+  if(hl){ctx.shadowColor=col;ctx.shadowBlur=18+6*Math.sin(t*5);ctx.strokeStyle='#fff';ctx.lineWidth=c.w+5;ctx.stroke();ctx.shadowBlur=0}
+  ctx.strokeStyle=col;ctx.lineWidth=c.w;ctx.stroke();
+  ctx.beginPath();ctx.arc(0,0,c.w*.7,0,7);ctx.fillStyle='#fde68a';ctx.fill();
+  ctx.lineWidth=1.5;ctx.strokeStyle='#92400e';ctx.stroke();
+  ctx.restore();
+}
+function label(c,i,rad){
+  const [dx,dy]=drift(i,0), txt='Chromosome '+(i+1);
+  ctx.save();ctx.font='700 12px system-ui,sans-serif';
+  const pw=ctx.measureText(txt).width+16;
+  const x=Math.max(pw/2+4,Math.min(W-pw/2-4,c.x+dx)), y=Math.max(16,c.y+dy-rad-12);
+  ctx.fillStyle='hsl('+HUE[i]+' 80% 58%)';ctx.beginPath();ctx.roundRect(x-pw/2,y-11,pw,22,11);ctx.fill();
+  ctx.fillStyle='#0b1020';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,x,y+.5);
+  ctx.restore();
+}
+function draw(){
+  const cs=getComputedStyle(document.documentElement), g=v=>cs.getPropertyValue(v).trim();
+  const cx=W/2, cy=H/2, u=R, S=cur;
+  ctx.clearRect(0,0,W,H);
+  // cell
+  cellPath(cx,cy,S.a,S.b,S.p);ctx.fillStyle=g('--cell');ctx.fill();
+  ctx.lineWidth=3;ctx.strokeStyle=g('--cellline');ctx.stroke();
+  // nuclei
+  ctx.setLineDash([7,5]);ctx.lineDashOffset=-t*6;
+  [[S.n1,cx-S.nOff],[S.n2,cx+S.nOff]].forEach(([al,x])=>{
+    if(al<.02)return;
+    ctx.globalAlpha=al;ctx.beginPath();ctx.arc(x,cy,S.nr,0,7);
+    ctx.fillStyle=g('--nuc');ctx.globalAlpha=al*.1;ctx.fill();
+    ctx.globalAlpha=al;ctx.strokeStyle=g('--nuc');ctx.lineWidth=2.5;ctx.stroke();
+  });
+  ctx.globalAlpha=1;ctx.setLineDash([]);
+  // poles
+  const py=cy-(1-Math.min(1,S.pole/.8))*.78*u, px=S.pole*S.a, pulse=1+.15*Math.sin(t*4);
+  const poles=[[cx-px,py],[cx+px,py]];
+  // spindle fibres
+  if(S.spin>.02){
+    ctx.save();ctx.globalAlpha=S.spin*.45;ctx.strokeStyle=g('--fg');ctx.lineWidth=1.2;ctx.setLineDash([5,4]);ctx.lineDashOffset=-t*22;
+    S.ch.forEach((pr,i)=>pr.forEach((c,k)=>{
+      const [dx,dy]=drift(i,k), [ax,ay]=poles[k];
+      ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(c.x+dx,c.y+dy);ctx.stroke();
+      if(phase<3){const [bx,by]=poles[1-k];ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(c.x+dx,c.y+dy);ctx.stroke()}
+    }));
+    ctx.restore();
+  }
+  poles.forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,.05*u*pulse,0,7);ctx.fillStyle='#fbbf24';ctx.shadowColor='#fbbf24';ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0});
+  // chromosomes: others first, selected on top
+  const order=[...S.ch.keys()].filter(i=>i!==sel).concat(sel);
+  order.forEach(i=>S.ch[i].forEach((c,k)=>chromatid(c,i,k,i===sel,i!==sel)));
+  // selection rings + labels
+  const pr=S.ch[sel], sep=Math.hypot(pr[0].x-pr[1].x,pr[0].y-pr[1].y)>.3*u;
+  (sep?pr:[pr[0]]).forEach(c=>{
+    const [dx,dy]=drift(sel,0), r=.22*u+Math.sin(t*4)*3;
+    ctx.save();ctx.setLineDash([5,5]);ctx.lineDashOffset=-t*18;ctx.lineWidth=2;ctx.strokeStyle='hsl('+HUE[sel]+' 90% 65%)';
+    ctx.beginPath();ctx.arc(c.x+dx,c.y+dy,r,0,7);ctx.stroke();ctx.restore();
+    label(c,sel,r);
+  });
+}
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
+  if(W){
+    const T=target(phase), f=1-Math.exp(-dt*3.5);
+    if(!cur)cur=JSON.parse(JSON.stringify(T));
+    else{SK.forEach(k=>cur[k]=lerp(cur[k],T[k],f));cur.ch.forEach((pr,i)=>pr.forEach((c,k)=>CK.forEach(q=>c[q]=lerp(c[q],T.ch[i][k][q],f))))}
+    draw();
+  }
+  requestAnimationFrame(frame);
+}
+
+// Selecting a chromosome
+function hit(e){
+  if(!cur)return -1;
+  const r=cvs.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  let best=-1,bd=Math.max(.25*R,28);
+  cur.ch.forEach((pr,i)=>pr.forEach(c=>{const d=Math.hypot(mx-c.x,my-c.y);if(d<bd){bd=d;best=i}}));
+  return best;
+}
+cvs.addEventListener('pointerdown',e=>{const i=hit(e);if(i>=0)sel=i});
+cvs.addEventListener('pointermove',e=>{cvs.style.cursor=hit(e)>=0?'pointer':'default'});
+
+setN(3);setPhase(0);requestAnimationFrame(frame);
+</script>
+</body>
+</html>
