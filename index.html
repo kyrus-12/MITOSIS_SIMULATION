@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Mitosis Simulation</title>
+    <style>
+        :root{
+            --bg:#fff;
+            --fg:#000;
+            --muted:#333;
+            --panel:#fff;
+            --line:#d4d4d8;
+            --cell:#f7f8fc;
+            --cellline:#9aa3b8;
+            --nuc:#0284c7;
+            color-scheme:light;
+            box-sizing:border-box;
+            padding-top:env(safe-area-inset-top, 0px);
+            padding-bottom:env(safe-area-inset-bottom, 0px);
+        }
+        html{
+            height:100%;
+            scroll-padding-top:env(safe-area-inset-top, 0px);
+        }
+        body{
+            min-height:100%;
+            margin:0;
+            background:var(--bg);
+            color:var(--fg);
+            font-family:system-ui, -apple-system, "Sogue UI", Roboto, sans-serif;
+        }
+        .app{
+            display:flex;
+            flex-direction:column;
+            min-height:100%;
+        }
+        .stage{
+            display:flex;
+            flex-direction:column;
+            flex:0 0 auto;
+        }
+        .steps{
+            display:flex;
+            gap:6px;
+            padding:10px 10px 6px;
+        }
+        .step{
+            flex:1;
+            min-width:0;
+            border:1px solid var(--line);
+            background:var(--panel);
+            color:var(--muted);
+            border-radius:12px;
+            padding:8px 2px; 
+            font:600 clamp(10px, 2.8vw, 14px) inherit;
+            font-family:inherit;
+            cursor:pointer;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap:3px;
+            transition:all 0.3s;
+        }
+        .step i{
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:var(--c);
+            opacity:0.5;
+            transition:all 0.3s;
+            font-style:normal;
+        }
+        .step on{
+            color:var(--fg);
+            border-color:var(--c);
+            background:color-mix(in srgb, var(--c) 20%, var(--panel));
+        }
+        .step.on i{
+            opacity:1;
+            box-shadow:0 0 10px var(--c);
+            transform:scale(1.4);
+        }
+        main{
+            height:clamp(300px, 46vh, 540px);
+            position:relative;
+        }
+        canvas{
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            touch-action:manipulation;
+        }
+        .ctrl{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            align-items:center;
+            gap:8px;
+            padding:8px 10px 2px;
+        }
+        .hint{
+            margin:2px 0 10px;
+            text-align:center;
+            font-size:12px;
+            color:var(--muted);
+        }
+        .btn{
+            border:1px solid var(--line);
+            background:var(--panel);
+            color:var(--fg);
+            border-radius:10px;
+            padding:8px 14px;
+            font:inherit;
+            font-size:14px;
+            cursor:pointer;
+        }
+        btn.active{
+            transform:scale(0.96);
+        }
+        .btn.main{
+            background:#6366f1;
+            border-color:#6366f1;
+            color:#fff;
+        }
+        .cnt{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            font-size:13px;
+            color:var(--muted);
+        }
+        .cnt .btn{
+            padding:6px 11px;
+        }
+        .cnt input{
+            width:60px;
+            text-align:center;
+            border:1px solid var(--line);
+            background:var(--panel);
+            color:var(--fg);
+            border-radius:10px;
+            padding:7px 4px;
+            font:inherit;
+            font-size:16px;
+        }
+        .box{
+            padding:14px;
+            border-top:1px solid var(--line);
+        }
+        .fhead{
+            display:flex;
+            align-items:baseline;
+            justify-content:space-between;
+            gap:10px;
+        }
+        #formula{
+            font-weight:800;
+            font-size:clamp(28px, 7vw, 38px);
+            line-height:1.1;
+        }
+        #formula small{
+            display:block;
+            font-size:12px;
+            font-weight:600;
+            color:var(--muted);
+            margin:2px;
+        }
+        #phname{
+            font-weight:800;
+            font-size:clamp(16px, 4.4vw, 20px);
+        }
+        #phtxt{
+            font-size:13px;
+            color:var(--muted);
+            margin:6px 0 12px;
+            line-height:1.4;
+        }
+        .q{
+            border:1px solid var(--line);
+            border-radius:12px;
+            padding:8px 10px;
+            margin-bottom:8px;
+            transition:background 0.2s, border-color, 0.2s;
+        }
+        .q.ok{
+            border-color:green;
+            background:#f0fdf4;
+        }
+        .q.bad{
+            border-color:red;
+            background:#fef2f2;
+        }
+        .qr{
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .qr label{
+            flex:1;
+            font-size:14px;
+            line-height:1.3;
+        }
+        .qr input{
+            width:64px;
+            text-align:center;
+            font:inherit;
+            font-size:16px;
+            font-weight:700;
+            border:1px solid var(--line);
+            border-radius:10px;
+            padding:6px 4px;
+            background:#fff;
+            color:#000;
+        }
+        .mark{
+            width:20px;
+            text-align:center;
+            font-weight:800;
+        }
+        .msg{
+            display:none;
+            font-size:12.5px;
+            line-height:1.35;
+            margin-top:6px;
+        }
+        .q.ok .msg{
+            display:block;
+            color:black;
+        }
+        .q.bad msg{
+            display:clock;
+            color:black;
+        }
+        #fb{
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            font-size:14px;
+            font-weight:600;
+            padding:10px 12px;
+            border-radius:12px;
+            background:#f4f4f5;
+        }
+        #fb.done{
+            background:#f4f4f5;
+            color:black;
+        }
+        @media(min-width:900px){
+            body{
+                height:100%;
+                overflow:hidden;
+            }
+            .app{
+                flex-direction:row;
+                height:100%;
+            }
+            .stage{
+                flex:1;
+                min-width:0;
+            }
+            main{
+                flex:1;
+                height:auto;
+                min-height:0;
+            }
+            .box{
+                flex:0 0 390px;
+                width:390px;
+                overflow:auto;
+                border-top:0;
+                border-left:1px solid var(--line);
+            }
+        }
+    </style>
+    </head>
+    <body>
+        <div class="app">
+            <section class="stage">
+                <div class="steps" id="steps"></div>
+                <main><canvas></canvas></main>
+                <div class="ctrl">
+                    <button class="btn" id="prev">Back</button>
+                    <button class="btn" id="play">Play</button>
+                    <button class="btn" id="next">Next</button>
+                    <span class="cnt">Chromosomes
+                        <button class="btn" id="minus">-</button><input id="cnt" type="number" min="2" max="46" inputmode="numeric" aria-label="Number of Chromosomes"><button class="btn" id="plus">+</button>
+                    </span>
+                </div>
+                <p class="hint"></p>
+            </section>
+            <aside class="box">
+                <div claass="fhead"><div id="formula"></div><div id="phname"></div></div>
+                <p id="phtxt"></p>
+                <div id="qs"></div>
+                <div id="fb"><span id="fbm"></span><b id="score"></b></div>
+            </aside>
+        </div>
+        <script>
+
+        </script>
+    </body>
+</html>
