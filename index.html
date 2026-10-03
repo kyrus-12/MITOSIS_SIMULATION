@@ -28,7 +28,7 @@
             margin:0;
             background:var(--bg);
             color:var(--fg);
-            font-family:system-ui, -apple-system, "Sogue UI", Roboto, sans-serif;
+            font-family:system-ui, -apple-system, "Sogoe UI", Roboto, sans-serif;
         }
         .app{
             display:flex;
@@ -71,7 +71,7 @@
             transition:all 0.3s;
             font-style:normal;
         }
-        .step on{
+        .step.on{
             color:var(--fg);
             border-color:var(--c);
             background:color-mix(in srgb, var(--c) 20%, var(--panel));
@@ -116,7 +116,7 @@
             font-size:14px;
             cursor:pointer;
         }
-        btn.active{
+        .btn.active{
             transform:scale(0.96);
         }
         .btn.main{
@@ -182,7 +182,7 @@
             border-radius:12px;
             padding:8px 10px;
             margin-bottom:8px;
-            transition:background 0.2s, border-color, 0.2s;
+            transition:background 0.2s, border-color 0.2s;
         }
         .q.ok{
             border-color:green;
@@ -229,8 +229,8 @@
             display:block;
             color:black;
         }
-        .q.bad msg{
-            display:clock;
+        .q.bad .msg{
+            display:block;
             color:black;
         }
         #fb{
@@ -291,7 +291,7 @@
                 <p class="hint"></p>
             </section>
             <aside class="box">
-                <div claass="fhead"><div id="formula"></div><div id="phname"></div></div>
+                <div class="fhead"><div id="formula"></div><div id="phname"></div></div>
                 <p id="phtxt"></p>
                 <div id="qs"></div>
                 <div id="fb"><span id="fbm"></span><b id="score"></b></div>
