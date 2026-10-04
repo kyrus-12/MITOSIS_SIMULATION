@@ -375,7 +375,7 @@
                 Q[phase].forEach((q, i) => {
                     const d = document.createElement('div');
                     d.className = 'q';
-                    d.innerHTML = '<div class="qr"><label for ="q'+ i +'">'+ q.q +'</label><input id="q'+ i +'" inputmode="numeric" autocomplete="off" placeholder="?" maxlength="3"><span class="mark"></span></div><div class="msg"></div>';
+                    d.innerHTML = '<div class="qr"><label for="q'+ i +'">'+ q.q +'</label><input id="q'+ i +'" inputmode="numeric" autocomplete="off" placeholder="?" maxlength="3"><span class="mark"></span></div><div class="msg"></div>';
                     
                     const inp = d.querySelector('input'), st = ans[qk(i)];
                     if(st)inp.value = st.v;
@@ -524,7 +524,8 @@
 
             function drift(i, k){
                 const s = phase < 2 ? 1 : 0.35;
-                return[Math.sin(t * 0.9 * i * 1.7 * k * 2) * 0.12 * R * s, Math.cos(t * 0.8 + 1 * 2.3 + k) * 0.012 * R * s];
+                return[Math.sin(t * 0.9 + i * 1.7 * k * 2) * 0.12 * R * s, 
+                Math.cos(t * 0.8 + 1 * 2.3 + k) * 0.012 * R * s];
             }
 
             function chromatid(c, i, k, hl, dim){
