@@ -279,7 +279,7 @@
         <div class="app">
             <section class="stage">
                 <div class="steps" id="steps"></div>
-                <main><canvas></canvas></main>
+                <main><canvas id="c"></canvas></main>
                 <div class="ctrl">
                     <button class="btn" id="prev">Back</button>
                     <button class="btn" id="play">Play</button>
@@ -309,7 +309,7 @@
 
             const HUE = [330, 200, 265, 155, 40], AN = [0.5, 2.4, 4.1, 1.3, 5.3], RR = [0.55, 0.75, 0.5, 0.85, 0.45], ROT = [0.6, 2.2, 1.1, 2.9, 0.2];
             let n = 3, phase = 0, sel = -1, timer = null, W = 0, H = 0, R = 100, cur = null, t = 0, last = performance.now();
-            const cvs = $('#c'), ctv = cvs.getContext('2d');
+            const cvs = $('#c'), ctx = cvs.getContext('2d');
 
             const stepsEl = $('#steps');
             PH.forEach((p, i) => { 
@@ -346,7 +346,7 @@
 
             function setN(v){
                 v = Math.round(+v);
-                if(!v || v < 2);
+                if(!v || v < 2) v = 2;
                 n = Math.min(46, v);
                 if(sel >= n) sel = -1;
                 $('#cnt').value = n;
@@ -375,7 +375,7 @@
                 Q[phase].forEach((q, i) => {
                     const d = document.createElement('div');
                     d.className = 'q';
-                    d.innerHTML = '<div class="qr"><label for ="q '+ i +'">'+ q.q +'</label><input id="q '+ i +'" inputmode="numeric" autocomplete="off" placeholder="?" maxlength="3"><span class="mark"></span></div><div class="msg"></div>';
+                    d.innerHTML = '<div class="qr"><label for ="q'+ i +'">'+ q.q +'</label><input id="q'+ i +'" inputmode="numeric" autocomplete="off" placeholder="?" maxlength="3"><span class="mark"></span></div><div class="msg"></div>';
                     
                     const inp = d.querySelector('input'), st = ans[qk(i)];
                     if(st)inp.value = st.v;
@@ -503,7 +503,7 @@
                         const L = 0.28 * uu, w = Math.max(minW, 0.035 * uu);
                         A = mk(cx - 0.6 * u + gx, cy + gy * 0.9, L, w, 0, 0, 0.32 * L, 0.32 * L); B = mk(cx + 0.6 * u + gx, cy + gy * 0.9, L, w, 0, 0, -0.32 * L, -0.32 * L);
                     } else {
-                        const L = 0.2 * uu, w = Math.max(minW, 0.035 * uu);
+                        const L = 0.2 * uu, w = Math.max(Math.max(2, 3 * sc), 0.022 * uu), s = spot(i, 0.38 * u - 0.6 * L);
                         const sx = s ? s[0] : Math.cos(Math.PI * 2 * i / n) * 0.17 * u, sy = s ? s[1] : Math.sin(Math.PI * 2 * i / n) * 0.17 * u;
                         A = mk(cx - 0.76 * u + sx, cy + sy, L, w, 0.7, ang(i), 0, 0); B = mk(cx + 0.76 * u + sx, cy + sy, L, w, 0.7, ang(i), 0, 0);
                     }
@@ -524,7 +524,7 @@
 
             function drift(i, k){
                 const s = phase < 2 ? 1 : 0.35;
-                return[Math.sin(t * 0.9 * i * 1.7 * k * 2) * 0.12 * R * s];
+                return[Math.sin(t * 0.9 * i * 1.7 * k * 2) * 0.12 * R * s, Math.cos(t * 0.8 + 1 * 2.3 + k) * 0.012 * R * s];
             }
 
             function chromatid(c, i, k, hl, dim){
