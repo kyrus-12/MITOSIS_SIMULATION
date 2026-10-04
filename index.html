@@ -28,7 +28,7 @@
             margin:0;
             background:var(--bg);
             color:var(--fg);
-            font-family:system-ui, -apple-system, "Sogoe UI", Roboto, sans-serif;
+            font-family:system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         }
         .app{
             display:flex;
@@ -308,7 +308,7 @@
             ];
 
             const HUE = [330, 200, 265, 155, 40], AN = [0.5, 2.4, 4.1, 1.3, 5.3], RR = [0.55, 0.75, 0.5, 0.85, 0.45], ROT = [0.6, 2.2, 1.1, 2.9, 0.2];
-            let n = 3, phase = 0, sel = 1, timer = null, W = 0, H = 0, R = 100, cur = null, t = 0, last = performance.now();
+            let n = 3, phase = 0, sel = -1, timer = null, W = 0, H = 0, R = 100, cur = null, t = 0, last = performance.now();
             const cvs = $('#c'), ctv = cvs.getContext('2d');
 
             const stepsEl = $('#steps');
@@ -346,9 +346,9 @@
 
             function setN(v){
                 v = Math.round(+v);
-                if(!v || v < 2) return;
+                if(!v || v < 2);
                 n = Math.min(46, v);
-                if(sel >= n) sel = 1;
+                if(sel >= n) sel = -1;
                 $('#cnt').value = n;
                 showFormula();
                 renderQuiz();
@@ -541,7 +541,7 @@
                     if(q < 0.5){
                         const f = q * 2; x = lerp(c.tx, 0, f); y = lerp(-c.L / 2, 0, f)
                     } else {
-                        const f = (q - 0.5) * 2; x = lerp(0, c.bx, f); y = lerp(0,-c.L / 2, f)
+                        const f = (q - 0.5) * 2; x = lerp(0, c.bx, f); y = lerp(0, c.L / 2, f)
                     }
                     const e = Math.sin(Math.PI * q);
                     x += Math.sin(q * 13 + ph + t * 2.2) * amp * e;
@@ -582,7 +582,7 @@
                 ctx.fill();
                 ctx.fillStyle = '#0b1020';
                 ctx.textAlign = 'center';
-                ctx.textBaseLine = 'middle';
+                ctx.textBaseline = 'middle';
                 ctx.fillText(txt, x, y + 0.5);
                 ctx.restore(); 
             }
@@ -618,7 +618,7 @@
                 ctx.setLineDash([7, 5]);
                 ctx.lineDashOffset = -t * 6;
                 [[S.n1, cx - S.nOff], [S.n2, cx + S.nOff]].forEach(([al, x]) => {
-                    if(al < 0.2) return;
+                    if(al < 0.02) return;
                     ctx.globalAlpha = al;
                     ctx.beginPath();
                     ctx.arc(x, cy, S.nr, 0, 7);
