@@ -314,7 +314,7 @@
             const stepsEl = $('#steps');
             PH.forEach((p, i) => { 
                 const b = document.createElement('button'); 
-                b.className = '.step';
+                b.className = 'step';
                 b.style.setProperty('--c', p.c);
                 b.innerHTML = '<i></i>' + p.n;b.onclick = () => setPhase(i); 
                 stepsEl.appendChild(b)
@@ -346,7 +346,7 @@
 
             function setN(v){
                 v = Math.round(+v);
-                if(!v || v < 2);
+                if(!v || v < 2) return;
                 n = Math.min(46, v);
                 if(sel >= n) sel = 1;
                 $('#cnt').value = n;
@@ -360,26 +360,156 @@
             ];
 
             const ans = {}, qk = i => n + '|' +phase+ '|' + i;
+
             function renderQuiz(){
                 const P = PH[phase], box = $('#qs');
-                $('phname').textContent = P.n;
+                $('#phname').textContent = P.n;
                 $('#phname').style.color = P.c;
                 $('#phtxt').textContent = P.t;
-                box.inneHTML = '';
+                box.innerHTML = '';
 
                 Q[phase].forEach((q, i) => {
                     const d = document.createElement('div');
                     d.className = 'q';
-                    d.innerHTML = '<div class="qr"><label for ="q '+i+'">'+q.q+'</label><input id="q '+i+'" inputmode="numeric" autocomplete="off" placholder="?" maxlength="3"><span class="mark"></span></div><div class="msg"></div>';
+                    d.innerHTML = '<div class="qr"><label for ="q '+ i +'">'+ q.q +'</label><input id="q '+ i +'" inputmode="numeric" autocomplete="off" placholder="?" maxlength="3"><span class="mark"></span></div><div class="msg"></div>';
                     
                     const inp = d.querySelector('input'), st = ans[qk(i)];
                     if(st)inp.value = st.v;
                     inp.addEventListener('input', () => {
-                        input.value = inp.value.replace(/\D/g, '');
+                        inp.value = inp.value.replace(/\D/g, '');
                         grade(i, d, inp, false)
-                    })
-                })
+                    });
+                    inp.addEventListener('change', () => grade(i, d, inp, true));
+                    inp.addEventListener('keydown', e => {
+                        if(e.key === 'Enter'){
+                            grade(i, d, inp, true);
+                            const nx = box.querySelectorAll('input')[i + 1];
+                            if(nx)nx.focus()
+                        }
+                    });
+                    box.appendChild(d);
+                    paint(i, d);
+                });
+                summary();
             }
+
+            function grade(i, d, inp, force){
+                const a = String(Q[phase][i].a(n)), v = inp.value;
+                let ok = null;
+                if(v === a)ok = true;
+                else if(v !== '' && (force || v.length >= a.length)) ok = false;
+                ans[qk(i)] = {v, ok};
+                paint(i, d);
+                summary();
+            }
+
+            function paint(i, d){
+                const s = ans[qk(i)] || {}, q = Q[phase][i], m = d.querySelector('.mark');
+                d.classList.toggle('ok', s.ok === true);
+                d.classList.toggle('bad', s.ok === false);
+                m.textContent = s.ok === true ? '✔' : s.ok === false ? '✘' : '';
+                m.style.color = s.ok ? '#16a34a' : '#dc2626';
+                d.querySelector('.msg').textContent = s.ok === true ? q.ok(n) : s.ok === false ? 'Not quite. '+q.h : '';
+            }
+
+            function summary(){
+                let here = 0, all = 0, tot = 0;
+                Q[phase].forEach((q, i) => {if((ans[qk(i)] || {}).ok) here++});
+                Q.forEach((qs, p) => qs.forEach((q, i) => { tot++; if ((ans[n+'|'+p+'|'+i] || {}).ok)all++}));
+                const done = here === Q[phase].length;
+                $('#fb').className = done ? 'done' : '';
+                $('#fbm').textContent = done ? (phase < 4 ? 'Phase complete! Try '+PH[phase + 1].n+' next. 🥹' : 'All phases done! Try another chromosome number. 🥳') : here+' of '+Q[phase].length+ ' correct. Answers are checked automatically.';
+                $('#score').textContent = all + ' / '+tot;
+            }
+
+            $('#cnt').addEventListener('change', e => setN(e.target.value));
+
+            function hold(id, d){
+                const b = $(id);
+                let to, iv;
+                const stop = () => {
+                    clearTimeout(to);
+                    clearInterval(iv)
+                };
+                b.addEventListener('pointerdown', () => {
+                    setN(n + d);
+                    to = setTimeout(() => {
+                        iv = setInterval (() => setN(n + d), 80)
+                    }, 400)
+                });
+                ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, stop))
+            }
+            hold('#minus', -1);
+            hold('#plus', 1);
+
+            new ResizeObserver(() => {
+                const r = cvs.parentElement.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+                W = r.width;
+                H = r.height;
+                cvs.width = W * d;
+                cvs.height = H * d;
+                ctx.setTransform(d, 0, 0, d, 0, 0);
+                R = Math.max(40, Math.min(W/3.3, H/2.25));
+            }).observe(cvs.parentElement);
+
+            function mk(x, y, L, w, wave, ang, tx, bx){
+                return{
+                    x, y, L, w, wave, ang, tx, bx
+                }
+            }
+
+            function scl(){
+                return Math.max(0.12, Math.min(1, Math.sqrt(5/n), 4.6/(n-1)))
+            }
+
+            function hue(i){
+                return i < 5 ? HUE[i] : (i * 137.508 + 20) % 360
+            }
+
+            const ang = i => ROT[i % 5] + Math.floor(i / 5) * 0.9;
+
+            function spot(i, rmax){
+                if(n <= 5) return null;
+                const r = rmax * Math.sqrt((i + 0.5)/n), a = i * 2.39996;
+                return[Math.cos(a) * r, Math.sin(a) * r]
+            }
+
+            function target(ph){
+                const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
+                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.1], [1.38 * u, u, 1]][ph];
+                const T = {
+                    a:cell[0], b:cell[1], p:cell[2], pole:[0.1, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0.6, 1, 1, 0][ph],
+                    n1:[1, 0.3, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
+                };
+                const minW = Math.max(2.2, 5 * sc);
+                const g = Math.min(0.4 * uu, 1.6 * u/(n - 1)), cols = 1, rows = n, cgap = 0;
+                for(let i = 0; i < n; i++){
+                    let A, B;
+                    const col = Math.floor(i/rows), inCol = col == cols - 1 ? n - col * rows : rows;
+                    const gx = (col - (cols - 1)/2) * cgap, gy = ((i % rows) - (inCol - 1)/2) * g;
+                    if(ph < 2){
+                        const L = 0.3 * uu, s = spot(i, 0.62 * u - 0.6 * L), k = ph == 0 ? 0.42 : 0.5;
+                        const px = cx + (s ? s [0] : Math.cos(AN[i]) * RR[i] * k * u), py = cy + (s ? s[1] : Math.sin(AN[i]) * RR[i] * k * u);
+                        const w = ph ? Math.max(minW, 0.035 * uu) : Math.max(Math.max(1.6, 2.5 * sc), 0.016 * uu), o = ph ? 0 : 0.025 * uu, x = ph ? 0.18 * L : 0;
+                        A = mk(px - o, py, L, w, ph ? 0.25 : 1, ang(i), -x, x); B = mk(px + o, py, L, w, ph ? 0.25 : 1, ang(i), x, -x); 
+                    } else if(ph == 2){
+                        const L = 0.28 * uu, w = Math.max(minW, 0.035 * uu);
+                        A = mk(cx + gx, cy + gy, L, w, 0, 0, -0.18 * L, 0.18 * L); B = mk(cx + gx, cy + gy, L, w, 0, 0, 0.18 * L, -0.18 * L);
+                    } else if(ph == 3){
+                        const L = 0.28 * uu, w = Math.max(minW, 0.035 * uu);
+                        A = mk(cx - 0.6 * u + gx, cy + gy * 0.9, L, w, 0, 0, 0.32 * L, 0.32 * L); B = mk(cx + 0.6 * u + gx, cy + gy * 0.9, L, w, 0, 0, -0.32 * L, -0.32 * L);
+                    } else {
+                        const L = 0.2 * uu, w = Math.max(minW, 0.035 * uu);
+                        const sx = s ? s[0] : Math.cos(Math.PI * 2 * i / n) * 0.17 * u, sy = s ? s[1] : Math.sin(Math.PI * 2 * i / n) * 0.17 * u;
+                        A = mk(cx - 0.76 * u + sx, cy + sy, L, w, 0.7, ang(i), 0, 0); B = mk(cx + 0.76 * u + sx, cy + sy, L, w, 0.7, ang(i), 0, 0);
+                    }
+                    T.ch.push([A, B]);
+                }
+                return T;
+            }
+            const SK = ['a', 'b', 'p', 'pole', 'spin', 'n1', 'n2', 'nOff', 'nr', 'cOff'], CK = ['x', 'y', 'tx', 'bx', 'L', 'w', 'wave', 'ang'];
+
+
         </script>
     </body>
 </html>
