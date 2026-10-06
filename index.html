@@ -284,7 +284,7 @@
                 <main><canvas id="c"></canvas></main>
                 <div class="ctrl">
                     <button class="btn" id="prev">◀️</button>
-                    <button class="btn" id="play">❚❚</button>
+                    <button class="btn" id="play">[ ▸ ]</button>
                     <button class="btn" id="next">▶️</button>
                     <span class="cnt">Chromosomes
                         <button class="btn" id="minus">-</button><input id="cnt" type="number" min="2" max="46" inputmode="numeric" aria-label="Number of Chromosomes"><button class="btn" id="plus">+</button>
@@ -335,9 +335,9 @@
                 if(timer){
                     clearInterval(timer);
                     timer = null;
-                    $('#play').textContent = '❚❚';
-                } else {
                     $('#play').textContent = '[ ▸ ]';
+                } else {
+                    $('#play').textContent = '❚❚';
                     timer = setInterval(() => setPhase (phase + 1), 4200);
                 }
             };
@@ -358,7 +358,7 @@
 
             const mq = (q, a, ok, h) => ({q, a, ok, h});
             const Q = [
-                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + 'means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
+                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
                 [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
                 [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
                 [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
