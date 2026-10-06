@@ -575,7 +575,7 @@
             }
 
             function label(c, i, rad){
-                const [dx, dy] = drift(i, 0), txt = 'Chromosome ' + (i + 1);
+                const [dx, dy] = drift(i, 0);
                 ctx.save();
                 ctx.font = '700 12px system-ui, sans-serif';
                 const pw = ctx.measureText(txt).width + 16;
