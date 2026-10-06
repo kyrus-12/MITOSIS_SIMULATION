@@ -283,9 +283,9 @@
                 <div class="steps" id="steps"></div>
                 <main><canvas id="c"></canvas></main>
                 <div class="ctrl">
-                    <button class="btn" id="prev">Back</button>
-                    <button class="btn" id="play">Play</button>
-                    <button class="btn" id="next">Next</button>
+                    <button class="btn" id="prev">◀️</button>
+                    <button class="btn" id="play">❚❚</button>
+                    <button class="btn" id="next">▶️</button>
                     <span class="cnt">Chromosomes
                         <button class="btn" id="minus">-</button><input id="cnt" type="number" min="2" max="46" inputmode="numeric" aria-label="Number of Chromosomes"><button class="btn" id="plus">+</button>
                     </span>
@@ -302,11 +302,11 @@
         <script>
             const $ = s => document.querySelector(s), lerp = (a,b,k) => a+(b-a)*k;
             const PH = [
-                {n: 'Interphase', c:'violet', t: 'M'},
-                {n: 'Prophase', c:'violet', t: 'N'},
-                {n: 'Metaphase', c:'violet', t: 'O'},
-                {n: 'Anaphase', c:'violet', t: 'P'},
-                {n: 'Telophase', c:'violet', t: 'Q'},
+                {n: 'Interphase', c:'violet', t: 'Insert simple definition here or instruction.'},
+                {n: 'Prophase', c:'violet', t: 'Insert simple definition here or instruction.'},
+                {n: 'Metaphase', c:'violet', t: 'Insert simple definition here or instruction.'},
+                {n: 'Anaphase', c:'violet', t: 'Insert simple definition here or instruction.'},
+                {n: 'Telophase', c:'violet', t: 'Insert simple definition here or instruction.'},
             ];
 
             const HUE = [330, 200, 265, 155, 40], AN = [0.5, 2.4, 4.1, 1.3, 5.3], RR = [0.55, 0.75, 0.5, 0.85, 0.45], ROT = [0.6, 2.2, 1.1, 2.9, 0.2];
@@ -335,15 +335,15 @@
                 if(timer){
                     clearInterval(timer);
                     timer = null;
-                    $('#play').textContent = 'Play';
+                    $('#play').textContent = '❚❚';
                 } else {
-                    $('#play').textContent = 'Pause';
+                    $('#play').textContent = '[ ▸ ]';
                     timer = setInterval(() => setPhase (phase + 1), 4200);
                 }
             };
 
             function showFormula(){
-                $('#formula').innerHTML = '2n = ' +n+(phase > 2 ? '<small> each daughter cell: 2n = '+n+'</small>' : '')
+                $('#formula').innerHTML = '2n = ' +n;
             };
 
             function setN(v){
@@ -358,11 +358,11 @@
 
             const mq = (q, a, ok, h) => ({q, a, ok, h});
             const Q = [
-                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + 'means ' + N + 'chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
-                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + 'means ' + N + 'chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
-                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + 'means ' + N + 'chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
-                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + 'means ' + N + 'chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
-                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + 'means ' + N + 'chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
+                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + 'means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
+                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
+                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
+                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
+                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + '  chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
             ];
 
             const ans = {}, qk = i => n + '|' +phase+ '|' + i;
@@ -575,7 +575,7 @@
             }
 
             function label(c, i, rad){
-                const [dx, dy] = drift(i, 0);
+                const [dx, dy] = drift(i, 0), txt = 'Chromosome ' + (i + 1);
                 ctx.save();
                 ctx.font = '700 12px system-ui, sans-serif';
                 const pw = ctx.measureText(txt).width + 16;
