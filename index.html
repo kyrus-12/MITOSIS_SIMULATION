@@ -723,6 +723,7 @@
             const HUE = [330, 200, 265, 155, 40], AN = [0.5, 2.4, 4.1, 1.3, 5.3], RR = [0.55, 0.75, 0.5, 0.85, 0.45], ROT = [0.6, 2.2, 1.1, 2.9, 0.2];
             let n = 3, phase = 0, sel = -1, timer = null, W = 0, H = 0, R = 100, cur = null, t = 0, last = performance.now();
             const cvs = $('#c'), ctx = cvs.getContext('2d');
+            let build = false;
 
             const stepsEl = $('#steps');
             PH.forEach((p, i) => { 
@@ -841,6 +842,7 @@
                 $('#fbm').textContent = done ? (phase < 4 ? 'Phase complete! Try '+PH[phase + 1].n+' next. 🥹' : 'All phases done! Try another chromosome number. 🥳') : here+' of '+Q[phase].length+ ' correct. Answers are checked automatically.';
                 $('#score').textContent = all + ' / '+tot;
             }
+
 
             $('#cnt').addEventListener('change', e => setN(e.target.value));
 
@@ -1147,7 +1149,7 @@
             setPhase(0);
             requestAnimationFrame(frame);
 
-            let build = false;
+            
             const PB = [[], [], [], [], []], names = [], els = {}, CAP = 2000, CD = 360, LBL = {cell:'Cell membrane', nuc:'Nucleus', cen:'Centriole', chr:'Chromosome'};
             const board = $('#board'), world = $('#world'), cnt = t => PB[phase].filter(x => x.t === t && !x.side).length;
             const sided = ph => ph >= 3, FIBP = [1, 2, 3];
@@ -1208,7 +1210,7 @@
                     if(ph <= 1){
                         const [a, b] = sp(j, 0.6);
                         Lp.push({t, x : c.x + a, y : c.y + b});
-                    } else if(ph === 2) Lp.push({t, c : c.x + sx, y : yy});
+                    } else if(ph === 2) Lp.push({t, x : c.x + sx, y : yy});
                     else {
                         const off = (ph === 3 ? 0.2 : 0.5) * R;
                         Lp.push({t, side : 0, x : c.x - off + sx, y : yy}, {t, side : 1, x : c.x + off + sx, y : yy})
@@ -1245,7 +1247,7 @@
             let selKey = null, bp = false, fl = false, wl = false;
             const dims = (it, e) => {
                 const ow = e.offsetWidth, oh = e.offsettHeight, a = (it.rot || 0) * Math.PI / 180, c = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a)), s = Math.max(0.3, it.sc || 1);
-                return {s, w, oh, w : (ow * c + oh * sn) * s, h : (ow * sn + oh * c) * sn};
+                return {s, 0w, oh, w : (ow * c + oh * sn) * s, h : (ow * sn + oh * c) * s};
             };
 
             const clampS = (it, e) => dims(it, e).s;
@@ -1415,7 +1417,7 @@
                 }
                 L.hidden = false;
                 L.textContent = names[e.k] || ('Chromosome ' + (e.k + 1));
-                L.style.background = 'hsl(' + hue(e.k) + '80% 72%)';
+                L.style.background = 'hsl(' + hue(e.k) + ' 80% 72%)';
                 const v = e.vis, lw = L.offsetWidth, lh = L.offsetHeight;
                 let y = v.cy - v.h / 2 - lh - 8;
                 if(y < 0) y = v.cy + v.h / 2 + 8;
@@ -1494,7 +1496,7 @@
                 let d = 'M' + P[0][0].toFixed(1) + ' ' + P[0][1].toFixed(1);
                 for(let i = 0; i < P.length - 1; i++){
                     const a = P[Math.max(0, i - 1)], b = P[i], c = P[i + 1], e = P[Math.min(P.length - 1, i + 2)];
-                    d += 'C' + (b[0] + (c[0] - a[0]) / 6).toFixed(1) + ' ' + (b[1] + (c[1] - a[1]) / 6).toFixed(1) + ' ' + (c[1] - (e[1] - b[1]) / 6).toFixed(1) + ' ' + c[0].toFixed(1) + ' ' + c[1].toFixed(1);  
+                    d += 'C' + (b[0] + (c[0] - a[0]) / 6).toFixed(1) + ' ' + (b[1] + (c[1] - a[1]) / 6).toFixed(1) + ' ' + (c[0] - (e[0] - b[0]) / 6).toFixed(1) +  (c[1] - (e[1] - b[1]) / 6).toFixed(1) + ' ' + c[0].toFixed(1) + ' ' + c[1].toFixed(1);  
                 }
                 return d;
             }
@@ -1521,13 +1523,13 @@
                 e.querySelector('svg').innerHTML = chrSvg(hue(e.k), 0, 0, e.k)
             }
 
-            function chrSvg(h, pd, sd, k){
+            function chrSvg(h, ph, sd, k){
                 const a = 'hsl(' + h + ' 80% 62%)', b = 'hsl(' + h + ' 85% 74%)';
                 const p = (d, c, w, x) => '<path ' + (x || '') + ' d="' + d + '" stroke="' + c + '" stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
                 const dot = (x, y) => '<circle class="cm" cx="' + x + '" cy="' + y + '" r="4.5" fill="#fde86a" stroke="#92400e" stroke-width="1.5"/>';
                 return [
                     (() => {
-                        const sh = shapes[k] || (shapes[k] = initShape(k + 1)), dk = 'hsl(' + h + '70% 38%)';
+                        const sh = shapes[k] || (shapes[k] = initShape(k + 1)), dk = 'hsl(' + h + ' 70% 38%)';
                         const hs = (st, c) => sh[st].map((q, i) => {
                             const en = i === 0 || i === sh[st].length - 1;
                             return '<circle class="hd" data-st="' + st + '" data-i="' + i + '" cx="' + q[0] +'" cy="' + q[1] + '" r="' + (en ? 5.5 : 4) + '" fill="' + (en ? c : '#fff') + '" stroke="' + dk + '" stroke-width="1.5"/>'
@@ -1537,7 +1539,7 @@
                     p('M11 6Q19 30 29 54', a, 6) + p('M29, 6Q21, 30, 11, 54', b, 6) + dot(20, 30),
                     p('M12 12L28 48', a, 8) + p('M28, 12L12, 48', b, 8) + dot(20, 30),
                     sd ? p('M10 10L28 30L10 50', a, 7) + dot(28, 30) : p('M30, 10L12, 30L30, 50', b, 7) + dot(12, 30),
-                    P(sd ? 'M20 4C30 14 10 20 20 30S30 46 20 56' : 'M20 4C10 14 30 20 20 30S10 46 20 56', a, 4) + dot(20, 30)
+                    p(sd ? 'M20 4C30 14 10 20 20 30S30 46 20 56' : 'M20 4C10 14 30 20 20 30S10 46 20 56', a, 4) + dot(20, 30)
                 ][ph];
             }
 
