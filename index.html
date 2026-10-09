@@ -1246,8 +1246,8 @@
             const BD = ['Interphase:', 'Prophase:', 'Metaphase:', 'Anaphase:', 'Telophase:'];
             let selKey = null, bp = false, fl = false, wl = false;
             const dims = (it, e) => {
-                const ow = e.offsetWidth, oh = e.offsettHeight, a = (it.rot || 0) * Math.PI / 180, c = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a)), s = Math.max(0.3, it.sc || 1);
-                return {s, 0w, oh, w : (ow * c + oh * sn) * s, h : (ow * sn + oh * c) * s};
+                const ow = e.offsetWidth, oh = e.offsetHeight, a = (it.rot || 0) * Math.PI / 180, c = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a)), s = Math.max(0.3, it.sc || 1);
+                return {s, ow, oh, w : (ow * c + oh * sn) * s, h : (ow * sn + oh * c) * s};
             };
 
             const clampS = (it, e) => dims(it, e).s;
