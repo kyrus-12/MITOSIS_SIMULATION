@@ -660,7 +660,8 @@
         <div class="app">
             <section class="stage">
                 <div class="steps" id="steps"></div>
-                <main><canvas id="c"></canvas>
+                <main>
+                    <canvas id="c"></canvas>
                 <div id="bld" hidden>
             <div class="pal" id="pal"></div>
             <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;">
@@ -687,7 +688,7 @@
             </div>
         </div>
     </main>
-    
+
                 <div class="ctrl">
                     <button class="btn" id="prev">◀️</button>
                     <button class="btn" id="play">[ ▸ ]</button>
@@ -742,6 +743,7 @@
             $('#prev').onclick = () => setPhase(phase - 1);
             $('#next').onclick = () => setPhase(phase + 1);
             $('#play').onclick = () => {
+                if(build){ bplay(); return}
                 if(timer){
                     clearInterval(timer);
                     timer = null;
@@ -753,7 +755,8 @@
             };
 
             function showFormula(){
-                $('#formula').innerHTML = '2n = ' +n;
+                const N = build ? cget() : n;
+                $('#formula').innerHTML = '2n = ' +N;
             };
 
             function setN(v){
@@ -778,6 +781,7 @@
             const ans = {}, qk = i => n + '|' +phase+ '|' + i;
 
             function renderQuiz(){
+                if(build){ sync(); return}
                 const P = PH[phase], box = $('#qs');
                 $('#phname').textContent = P.n;
                 $('#phname').style.color = P.c;
@@ -1149,7 +1153,7 @@
             const sided = ph => ph >= 3, FIBP = [1, 2, 3];
             const rad = c => CD * (c.sc || 1) / 2;
 
-            function grip(it){
+            function grp(it){
                 let b = null, bd = 1e9;
                 PB[phase].forEach(c => {
                     if(c.t !=='cell') return;
@@ -1773,7 +1777,7 @@
                     clearInterval(timer);
                     timer = null
                 }
-                $('#play').textContent = '🧬';
+                $('#play').textContent = '[ ▸ ]';
                 $('#bld').hidden = !build;
                 cvs.style.visibility = build ? 'hidden' : 'visible';
                 $('#build').textContent = build ? '🔚' : '🧬';
@@ -1845,7 +1849,6 @@
                 $('#fbm').textContent = tot === 0 ? 'Build this phase to unlock some questions' : done ? 'Phase complete! 🥳' : got + ' of ' + tot + 'correct.';
                 $('#score').textContent = got + ' / ' + tot;
             }
-            $('#cnt').addEventListener('change', e => cset(e.target.value));
 
          
         </script>
