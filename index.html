@@ -1113,6 +1113,711 @@
             setPhase(0);
             requestAnimationFrame(frame);
 
+            let build = false;
+            const PB = [[], [], [], [], []], names = [], els = {}, CAP = 2000, CD = 360, LBL = {cell:'Cell membrane', nuc:'Nucleus', cen:'Centriole', chr:'Chromosome'};
+            const board = $('#board'), world = $('#world'), cnt = t => PB[phase].filter(x => x.t === t && !x.side).length;
+            const sided = ph => ph >= 3, FIBP = [1, 2, 3];
+            const rad = c => CD * (c.sc || 1) / 2;
+
+            function grip(it){
+                let b = null, bd = 1e9;
+                PB[phase].forEach(c => {
+                    if(c.t !=='cell') return;
+                    const d = Math.hypot(it.x - c.x, it.y - c.y); 
+                    if(d <= rad(c) && d < bd){
+                        bd = d; 
+                        b = c;
+                    }
+                }); 
+                return b;
+            }
+
+            function cget(){
+                return build ? cnt('chr') : n;
+            }
+
+            function cset(v){
+                if(build) setB('chr', Math.round(+v) || 0); else setN(v);
+            }
+
+            function spawn(t){
+                const Lp = PB[phase], cs = Lp.filter(x => x.t === 'cell'), ph = phase;
+                if(t === 'cell'){
+                    const k = cs.length, p = CD * 1.45;
+                    Lp.push({t, x : CD * 0.72 + (k % 3) * p, y : CD * 0.72 + Math.floor(k / 3) * p});
+                    return;
+                }
+                const own = x => Lp.filter(o => o.t === t && !o.side && grp(o) === x).length;
+                let c, R, j;
+                if(cs.length){
+                    c = cs.reduce((m, x) => own(x) < own(m) ? x : m);
+                    R = rad(c);
+                    j = own(c);
+                } else {
+                    c = {x : board.scrollLeft + board.clientWidth / 2, y : board.scrollTop + board.clientHeight / 2};
+                    R = Math.max(90, Math.min(board.clientWidth, board.clientHeight) / 2 - 60);
+                    j = cnt(t);
+                }
+                const sp = (m, k) => [Math.cos(m * 2.4) * R * k * Math.sqrt((m + 0.5) / (m + 3)), Math.sin(m * 2.4) * R * k * Math.sqrt((m + 0.5) / (m + 3))], sd = j % 2 ? 1 : -1, st = (((j >> 1) % 5) - 2) * 30;
+                if(t === 'nuc'){
+                    let dx = 0, dy = 0;
+                    if(ph === 4 && j < 2) dx = sd * R * 0.5;
+                    else if(j){
+                        dx = Math.cos(j * 2.4) * R * 0.5; 
+                        dy = Math.sin(j * 2.4) * R * 0.5;
+                    }
+                    Lp.push({t, x : c.x + dx, y : c.y + dy});
+                } else if(t === 'cen') Lp.push({t, x : c.x + sd * R * (ph === 4 ? 0.55 : 0.8), y : c.y + st});
+                else {
+                    const per = Math.max(1, Math.floor(R * 1.5 / 34)), col = Math.floor(j / per), row = j % per;
+                    const sx = (col % 2 ? 1 : -1) * Math.ceil(col / 2) * 26, yy = c.y + (row - (per - 1) / 2) * 34;
+                    if(ph <= 1){
+                        const [a, b] = sp(j, 0.6);
+                        Lp.push({t, x : c.x + a, y : c.y + b});
+                    } else if(ph === 2) Lp.push({t, c : c.x + sx, y : yy});
+                    else {
+                        const off = (ph === 3 ? 0.2 : 0.5) * R;
+                        Lp.push({t, side : 0, x : c.x - off + sx, y : yy}, {t, side : 1, x : c.x + off + sx, y : yy})
+                    }
+                }
+            }
+
+            function setB(t, v){
+                v = Math.max(0, Math.min(CAP, v));
+                const rm = tt => {
+                    for(let k = PB[phase].length - 1; k >= 0; k--) if(PB[phase][k].t === tt){
+                        PB[phase].splice(k, 1);
+                        return
+                    }
+                };
+                while(cnt(t) < v) spawn(t);
+                while(cnt(t) > v){
+                    rm(t);
+                    if(t === 'chr' && sided(phase)) rm(t)
+                }
+                sync();
+            }
+
+            function bUpdate(){
+                ['cell', 'nuc', 'cen', 'chr'].forEach(t => $('#pc-' + t).textContent = cnt(t));
+                if(build){
+                    $('#cnt').value = cnt('chr');
+                    showFormula();
+                    renderMCQ();
+                }
+            }
+
+            const BD = ['Interphase:', 'Prophase:', 'Metaphase:', 'Anaphase:', 'Telophase:'];
+            let selKey = null, bp = false, fl = false, wl = false;
+            const dims = (it, e) => {
+                const ow = e.offsetWidth, oh = e.offsettHeight, a = (it.rot || 0) * Math.PI / 180, c = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a)), s = Math.max(0.3, it.sc || 1);
+                return {s, w, oh, w : (ow * c + oh * sn) * s, h : (ow * sn + oh * c) * sn};
+            };
+
+            const clampS = (it, e) => dims(it, e).s;
+
+            function bplay(){
+                bp = !bp;
+                $('#play').textContent = bp ? '[ ▸ ]' : '❚❚';
+                sync();
+            }
+
+            function fit(){
+                let mx = 0, my = 0;
+                Object.values(els).forEach(e => {
+                    if(e.vis){
+                        mx = Math.max(mx, e.vis.cx + e.vis.w / 2);
+                        my = Math.max(my, e.vis.cy + e.vis.h / 2); 
+                    }
+                });
+                world.style.width = 'max(100%, ' + Math.ceil(mx + 200) + 'px)';
+                world.style.height = 'max(100%, ' + Math.ceil(my + 200) + 'px)';
+            }
+
+            function place(it, e){
+                if(it.t === 'cell') e.style.width = e.style.height = CD + 'px';
+                const d = dims(it, e);
+                e.style.transform = 'scale(' + d.s + ')';
+                e.style.left = (it.x - d.ow / 2) + 'px';
+                e.style.top = (it.y - d.oh / 2) + 'px';
+                const rt = e.querySelector('.rt');
+                if(rt) rt.style.transform = 'rotate(' + (it.rot || 0) + 'deg)';
+                e.vis = {cx : it.x, cy : it.y, w : d.w, h : d.h};
+            }
+
+            const view = () => ({x0 : board.scrollLeft - 150, x1 : board.scrollLeft + board.clientWidth + 150, y0 : board.scrollTop - 150, y1 : board.scrollTop + board.clientHeight + 150});
+
+            function setDirs(){
+                Object.values(els).filter(e => e.it && e.it.t === 'chr').forEach(e => e.style.setProperty('--dir', phase === 3 ? (e.it.side ? 1 : -1) : 1));
+            }
+
+            function drawFib(){
+                const f = $('#fib');
+                if(!build || !bp || !FIBP.includes(phase)){
+                    if(f.firstChild) f.innerHTML = ''; 
+                    return;
+                }
+                const bb = world.getBoundingClientRect(), v = view();
+                const ctr = n => {
+                    const r = n.getBoundingClientRect();
+                    return [r.left + r.width / 2 - bb.left, r.top + r.height / 2 - bb.top]
+                };
+                const all = Object.values(els).filter(e => e.it && e.vis), cg = new Map();
+                all.filter(e => e.it.t === 'cen').forEach(e => {
+                    const g = grp(e.it), a = cg.get(g) || [];
+                    a.push(ctr(e.querySelector('i')));
+                    cg.set(g, a)
+                });
+                const kk = phase === 3 ? 1 : 1e9;
+                let h = '';
+                all.filter(e => e.it.t === 'chr').forEach(e => {
+                    const X = e.it.x, Y = e.it.y;
+                    if(X < v.x0 || X > v.x1 || Y < v.y0 || Y > v.y1) return;
+                    const m = e.querySelector('.cm'), cs = cg.get(grp(e.it));
+                    if(!m || !cs) return;
+                    const [x, y] = ctr(m);
+                    cs.slice().sort((a, b) => Math.hypot(a[0] - x, a[1] - y) - Math.hypot(b[0] - x, b[1] - y)).slice(0, kk).forEach(q => {
+                        h += '<line x1="' + q[0] + '" y1="' + q[1] + '" x2="' + x +'" y2="' + y + '"/>'
+                    });
+                });
+                f.innerHTML = h;
+            }
+
+            function wormLoop(){
+                if(build && bp && phase === 0){
+                    const tt = performance.now() / 1000;
+                    Object.values(els).forEach(e => {
+                        if(e.it && e.it.t === 'chr') drawThreads(e, tt)
+                    });
+                requestAnimationFrame(wormLoop);
+                }
+                 else wl = false;
+            }
+
+            function fibLoop(){
+                drawFib();
+                if(build && bp && phase >= 1 && phase <= 3) requestAnimationFrame(fibLoop);
+                else fl = false;
+            }
+
+            let cl = false, ct0 = 0;
+            const clamp01 = x => Math.max(0, Math.min(1, x)), ease = x => x * x * (3 - 2 * x), seg = (a, b, c) => ease(clamp01((a - b) / (c - b)));
+
+            function cleaveOn(){
+                return build && bp && phase === 4 && cnt('cell') > 0;
+            }
+
+            function cleaveLoop(){
+                if(cleaveOn()){
+                    drawCleave();
+                    requestAnimationFrame(cleaveLoop);
+                } else {
+                    cl = false;
+                    $('#cleave').innerHTML = '';
+                }
+            }
+
+            function cleavePath(cx, cy, ra, rb, q, m, ax, st, circ){
+                const lim = 1e9;
+                const a = Math.max(4, Math.min(ra * (1 + 0.3 * q), lim)), b = rb * (1 - 0.8 * q), mp = (u, v, sg) => ax === 'x' ? [cx + sg * u, cy + v] : [cx + v, cy + sg * u];
+                const f = u => 1 - q * Math.exp(- Math.pow(u / (0.3 * a), 2));
+                if(n <= 0){
+                    let d = '';
+                    for(let i = 0; i < 220; i++){
+                        const  th = i / 120 * Math.PI * 2, u = a * Math.cos(th), v = b * Math.sin(th) * f(u), [x, y] = mp(u, v, 1);
+                        d += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+                    }
+                     return '<path d="' + d + 'Z" ' + st + '/>';
+                }
+                const NP = 80, gap = a * 0.05, rfa = Math.max(3, a * 0.5 - gap), rfb = circ ? rfa : b * 0.9;
+                let h = '';
+                [-1, 1].forEach(sg => {
+                    let d = '';
+                    for(let i = 0; i < NP; i++){
+                        const th = -Math.PI / 2 + i / NP * Math.PI, u = a * Math.cos(th), v = b * Math.sin(th) * f(u);
+                        const hx = gap * m + u , ccx = gap * m + rfa, qx = ccx + rfb * Math.cos(2 * th), qy = rfb * Math.sin(2 * th);
+                        const [x, y] = mp(hx + (qx - hx) * m, v + (qy - v) * m, sg);
+                        d += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+                    }
+                    h += '<path d="' + d + 'Z" ' + st + '/>';
+                });
+                return h;
+            }
+
+            function drawCleave(){
+                const c = $('#cleave');
+                if(!cleaveOn()){
+                    c.innerHTML = '';
+                    return;
+                }
+                const cells = Object.values(els).filter(e => e.it && e.it.t === 'cell' && e.vis);
+                if(!cells.length){
+                    c.innerHTML = '';
+                    return;
+                }
+                if(!cl){
+                    cl = true;
+                    ct0 = performance.now();
+                    requestAnimationFrame(cleaveLoop);
+                }
+                const tt = ((performance.now() - ct0) / 7000) % 1;
+                const q = seg(tt, 0.1, 0.55) * (1 - seg(tt, 0.94, 1)), m = seg(tt, 0.55, 0.75) * (1 - seg(tt, 0.88, 0.94));
+                const st = 'style="fill:var(--cell); stroke:var(--cellline); stroke-width:4; stroke-linejoin:round;"';
+                let h = '';
+                const vw = view();
+                cells.forEach(e => {
+                    const v = e.vis, cx = v.cx, cy = v.cy, rr = Math.max(v.w, v.h) * 0.75;
+                    if(cx + rr < vw.x0 || cx - rr > vw.x1 || cy + rr < vw.y0 || cy - rr > vw.y1) return;
+                    h += cleavePath(cx, cy, v.w / 2 - 2, v.h / 2 - 2, q, m, 'x', st, true);
+                });
+                c.innerHTML = h;
+            }
+
+            function posLbl(){
+                const L = $('#pLbl'), e = els[selKey];
+                if(!build || !bp || !e || !e.it || e.it.t !== 'chr' || !e.vis){
+                    L.hidden = true;
+                    return;
+                }
+                L.hidden = false;
+                L.textContent = names[e.k] || ('Chromosome ' + (e.k + 1));
+                L.style.background = 'hsl(' + hue(e.k) + '80% 72%)';
+                const v = e.vis, lw = L.offsetWidth, lh = L.offsetHeight;
+                let y = v.cy - v.h / 2 - lh - 8;
+                if(y < 0) y = v.cy + v.h / 2 + 8;
+                L.style.left = Math.max(0, Math.min(world.clientWidth - lw, v.cx - lw / 2)) + 'px';
+                L.style.top = Math.max(0, Math.min(world.clientHeight - lh, y)) + 'px';
+            }
+
+            function posTb(){
+                posLbl();
+                const e = els[selKey], tb = $('#tb');
+                if(!build || bp || !e || !e.it || !e.vis){
+                    tb.hidden = true;
+                    return;
+                }
+                const it = e.it, v = e.vis, chr = it.t === 'chr';
+                tb.hidden = false;
+                $('#tbn').hidden = !chr;
+                $('#tbrl').hidden = $('#tbrr').hidden = !chr;
+                $('#tbtg').hidden = $('#tbst').hidden = !(chr && phase === 0);
+                $('#tbl').textContent = chr ? '' : LBL[it.t];
+                if(chr && document.activeElement !== $('#tbn')) $('#tbn').value = names[e.k] || '';
+                $('#tbz').textContent = Math.round(clampS(it, e) * 100) + '%';
+                const tw = tb.offsetWidth, th = tb.offsetHeight;
+                let y = v.cy - v.h / 2 - th - 6;
+                if(y < 0) y = v.cy + v.h / 2 + 6;
+                tb.style.left = Math.max(0, Math.min(world.clientWidth - tw, v.cx - tw / 2)) + 'px';
+                tb.style.top = Math.max(0, Math.min(world.clientHeight - th, y)) + 'px';
+            }
+
+            function refreshSel(){
+                Object.values(els).forEach(e => e.classList.toggle('sel', e.key === selKey)); 
+                posTb();
+            }
+
+            const shapes = {};
+            function initShape(seed){
+                let r = seed * 2654435761 >>> 0;
+                const rnd = () => {
+                    r = (r + 0x6D2B79F5) >>> 0;
+                    let z = Math.imul(r ^ r >>> 15, 1 | r);
+                    z = z + Math.imul(z ^ z >>> 7, 61 | z) ^ z;
+                    return ((z ^ z >>> 14) >>> 0) / 4294967296
+                };
+                let x = 15 + rnd() * 50, y = 15 + rnd() * 50, an = rnd() * 6.28;
+                const A = [[x, y]];
+                for(let i = 1; i < 9; i++){
+                    an += (rnd() - 0.5) * 4;
+                    const l =16 + rnd() * 22;
+                    let nx = x + Math.cos(an) * l, ny = y + Math.sin(an) * l;
+                    if(nx < 5 || nx > 75){
+                        an = Math.PI - an;
+                        nx = Math.max(5, Math.min(75, nx));
+                    }
+                    if(ny < 5 || ny > 75){
+                        an = -an;
+                        ny = Math.max(5, Math.min(75, ny));
+                    }
+                    x = nx;
+                    y = ny;
+                    A.push([x, y]);
+                }
+                const B = A.map(q => [Math.max(5, Math.min(75, q[0] + 5 + (rnd() - 0.5) * 18)), Math.max(5, Math.min(75, q[1] + 4 + (rnd() - 0.5) * 18))]);
+                return {a : A, b : B};
+            }
+
+            function straightShape(){
+                const a = [], b =[];
+                for(let i = 0; i < 9; i++){
+                    a.push([32, 6 + i * 8.5]);
+                    b.push([48, 6 + i * 8.5])
+                } 
+                return {a, b}
+            }
+
+            function smoothD(P){
+                let d = 'M' + P[0][0].toFixed(1) + ' ' + P[0][1].toFixed(1);
+                for(let i = 0; i < P.length - 1; i++){
+                    const a = P[Math.max(0, i - 1)], b = P[i], c = P[i + 1], e = P[Math.min(P.length - 1, i + 2)];
+                    d += 'C' + (b[0] + (c[0] - a[0]) / 6).toFixed(1) + ' ' + (b[1] + (c[1] - a[1]) / 6).toFixed(1) + ' ' + (c[1] - (e[1] - b[1]) / 6).toFixed(1) + ' ' + c[0].toFixed(1) + ' ' + c[1].toFixed(1);  
+                }
+                return d;
+            }
+
+            function threadD(P, tt, s){
+                return smoothD(tt ? P.map((q, i) => [q[0] + 3.2 * Math.sin(tt * 3.2 + i * 1.1 + s), q[1] + 3.2 + Math.cos(tt * 1.7 + i * 0.9 + s * 1.7)]) : P)
+            }
+
+            function drawThreads(e, tt){
+                const sh = shapes[e.k]; 
+                if(!sh) return;
+                ['a', 'b'].forEach((st, si) => {
+                    const q = e.querySelector('path[data-st="' + st + '"]');
+                    if(q) q.setAttribute('d', threadD(sh[st], tt, si * 2 + e.k))
+                });
+                e.querySelectorAll('circle.hd').forEach(c => {
+                    const q = sh[c.dataset.st][+c.dataset.i];
+                    c.setAttribute('cx', q[0]);
+                    c.setAttribute('cy', q[1]);
+                });
+            }
+
+            function redoThreads(e){
+                e.querySelector('svg').innerHTML = chrSvg(hue(e.k), 0, 0, e.k)
+            }
+
+            function chrSvg(h, pd, sd, k){
+                const a = 'hsl(' + h + ' 80% 62%)', b = 'hsl(' + h + ' 85% 74%)';
+                const p = (d, c, w, x) => '<path ' + (x || '') + ' d="' + d + '" stroke="' + c + '" stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+                const dot = (x, y) => '<circle class="cm" cx="' + x + '" cy="' + y + '" r="4.5" fill="#fde86a" stroke="#92400e" stroke-width="1.5"/>';
+                return [
+                    (() => {
+                        const sh = shapes[k] || (shapes[k] = initShape(k + 1)), dk = 'hsl(' + h + '70% 38%)';
+                        const hs = (st, c) => sh[st].map((q, i) => {
+                            const en = i === 0 || i === sh[st].length - 1;
+                            return '<circle class="hd" data-st="' + st + '" data-i="' + i + '" cx="' + q[0] +'" cy="' + q[1] + '" r="' + (en ? 5.5 : 4) + '" fill="' + (en ? c : '#fff') + '" stroke="' + dk + '" stroke-width="1.5"/>'
+                        }).join('');
+                        return p(smoothD(sh.a), a, 2.4, 'data-st="a"') + p(smoothD(sh.b), b, 2.4, 'class="rep"  pathLength="100" data-st="b"') + hs('b', b) + hs('a', a);
+                    })(),
+                    p('M11 6Q19 30 29 54', a, 6) + p('M29, 6Q21, 30, 11, 54', b, 6) + dot(20, 30),
+                    p('M12 12L28 48', a, 8) + p('M28, 12L12, 48', b, 8) + dot(20, 30),
+                    sd ? p('M10 10L28 30L10 50', a, 7) + dot(28, 30) : p('M30, 10L12, 30L30, 50', b, 7) + dot(12, 30),
+                    P(sd ? 'M20 4C30 14 10 20 20 30S30 46 20 56' : 'M20 4C10 14 30 20 20 30S10 46 20 56', a, 4) + dot(20, 30)
+                ][ph];
+            }
+
+            function mkEl(t, k){
+                const e = document.createElement('div');
+                e.className = 'el ' + t;
+                e.style.opacity = 0;
+                e.k = k;
+                e.innerHTML = t === 'chr' ? '<div class="mv"><div class="rt"><svg class="grip" width="40" height="60" viewBox="0 0 40 60"></svg></div></div>' : t === 'nuc' ? 'Nucleus' : t === 'cen' ? '<i></i>Centriole' : '<span>Cell Membrane</span>';
+                dragIt(e);
+                return e;
+            }
+
+            function sync(){
+                const seen = {}, kc = {};
+                PB[phase].forEach(it => {
+                    const g = it.t + (it.side ? '2' : ''), k = kc[g] = (kc[g] === undefined ? 0 : kc[g] + 1), key = g + '#' + k;
+                    seen[key] = 1;
+                    let e = els[key];
+                    if(!e){
+                        e = els[key] = mkEl(it.t, k);
+                        e.key = key;
+                        world.appendChild(e);
+                        const tw = it.side ? els['chr#' + k] : null;
+                        if(tw){
+                            e.style.left = tw.style.left;
+                            e.style.top = tw.style.top;
+                            e.style.transform = tw.style.transform;
+                            void e.offsetWidth;
+                        }
+                        requestAnimationFrame(() => e.style.opacity = 1);
+                    }
+                    e.it = it;
+                    if(it.t === 'chr' && (e.ph !== phase || e.sd !== (it.side || 0))){
+                        e.ph = phase;
+                        e.sd = it.side || 0;
+                        e.querySelector('.mv').className = 'mv ph' + phase;
+                        const sv = e.querySelector('svg');
+                        sv.setAttribute('class', 'grip ph' + phase);
+                        sv.setAttribute('width', phase ? 40 : 80);
+                        sv.setAttribute('height', phase ? 60 : 80);
+                        sv.setAttribute('viewBox', phase ? '0 0 40 60' : '0 0 80 80');
+                        sv.innerHTML = chrSvg(hue(k), phase, e.sd, k);
+                    }
+                    place(it, e);
+                    if(it.t === 'chr' && phase === 0 && !bp) drawThreads(e, 0);
+                });
+                Object.keys(els).forEach(key => {
+                    if(!seen[key]){
+                        const e = els[key];
+                        delete els[key];
+                        e.style.opacity = 0;
+                        setTimeout(() => e.remove(), 500)
+                    }
+                });
+                if(selKey && !els[selKey]) selKey = null;
+                $('#bcap').textContent = BD[phase];
+                board.classList.toggle('playing', bp);
+                [0, 1, 2, 3, 4].forEach(q => board.classList.toggle('p' + q, q === phase));
+                board.classList.toggle('cl', cleaveOn());
+                fit();
+                setDirs();
+                drawFib();
+                drawCleave();
+                if(bp && !fl && phase >= 1 && phase <= 3){
+                    fl = true;
+                    requestAnimationFrame(fibLoop);
+                }
+                if(bp && !wl && phase === 0){
+                    wl = true;
+                    requestAnimationFrame(wormLoop)
+                }
+                refreshSel();
+                bUpdate();
+            }
+
+            function dragIt(e){
+                e.addEventListener('pointerdown', ev => {
+                    ev.preventDefault();
+                    e.setPointerCapture(ev.pointerId);
+                    const it = e.it, wr = world.getBoundingClientRect(), ox = it.x - (ev.clientX - wr.left), oy = it.y - (ev.clientY - wr.top), x0 = ev.clientX, y0 = ev.clientY, was = selKey === e.key; 
+                    const kids = it.t === 'cell' ? Object.values(els).filter(k => k !== e && k.it && k.it.t !== 'cell' && grp(k.it) === it).map(k => ({k, dx : k.it.x - it.x, dy : k.it.y - it.y})) : [];
+                    let moved = false, px = ev.clientX, py = ev.clientY, raf = 0;
+                    selKey = e.key;
+                    e.classList.add('drag');
+                    kids.forEach(o => o.k.classList.add('nt'));
+                    refreshSel();
+                    const go = () => {
+                        const w = world.getBoundingClientRect(), d = dims(it, e);
+                        it.x = Math.max(d.w / 2, px - w.left + ox);
+                        it.y = Math.max(d.h / 2, py - w.top + oy);
+                        place(it, e);
+                        kids.forEach(o => { o.k.it.x = it.x + o.dx; o.k.it.y = it.y + o.dy; place(o.k.it, o.k) });
+                        fit();
+                        posTb();
+                        drawFib();
+                        drawCleave();
+                    };
+                    const loop = () => {
+                        const br = board.getBoundingClientRect();
+                        let dx = 0, dy = 0;
+                        if(px > br.right - 36) dx = 14;
+                        else if(px < br.left + 36) dx = -14;
+                        if(py > br.bottom -36) dy =14;
+                        else if(py < br.top + 36) dy = -14;
+                        if(moved && (dx || dy)){
+                            board.scrollLeft += dx;
+                            board.scrollTop += dy;
+                            go();
+                        }
+                        raf = requestAnimationFrame(loop);
+                    };
+                    const mv = m => {
+                        px = m.clientX;
+                        py = m.clientY;
+                        if(Math.abs(px - x0) + Math.abs(py - y0) > 4) moved = true;
+                        if(moved) go();
+                    };
+                   const up = () => {
+                    cancelAnimationFrame(raf);
+                    e.classList.remove('drag');
+                    kids.forEach(o => o.k.classList.remove('nt'));
+                    e.removeEventListener('pointermove', mv);
+                    e.removeEventListener('pointerup', up);
+                    e.removeEventListener('pointercancel', up);
+                    if(!moved && was){
+                        selKey = null;
+                        refreshSel()
+                    }
+                   };
+                   e.addEventListener('pointermove', mv);
+                   e.addEventListener('pointerup', up);
+                   e.addEventListener('pointercancel', up);
+                   raf = requestAnimationFrame(loop);
+                });
+            }
+            board.addEventListener('pointerdown', ev => {
+                const h = ev.target.closest ? ev.target.closest('.hd') : null;
+                if(!h || bp) return;
+                ev.preventDefault();
+                ev.stopPropagation();
+                h.setPointerCapture(ev.pointerId);
+                const e = h.closest('.el'), sv = e.querySelector('svg'), sh = shapes[e.k], st = h.dataset.st, i = +h.dataset.i;
+                const mv = m => {
+                    const pt = sv.createSVGPoint();
+                    pt.x = m.clientX;
+                    pt.y = m.clientY;
+                    const q = pt.matrixTransform(sv.getScreenCTM().inverse());
+                    sh[st][i] = [Math.max(3, Math.min(77, q.x)), Math.max(3, Math.min(77, q.y))];
+                    drawThreads(e, 0)
+                };
+                const up = () => {
+                    h.removeEventListener('pointermove', mv);
+                    h.removeEventListener('pointerup', up);
+                    h.removeEventListener('pointercancel', up);
+                };
+                h.addEventListener('pointermove', mv);
+                h.addEventListener('pointerup', up);
+                h.addEventListener('pointercancel', up);
+            }, true);
+            
+            $('#tbtg').onclick = () => {
+                const e = els[selKey];
+                if(e && e.it && e.it.t === 'chr' && phase === 0){
+                    shapes[e.k] = initShape(Math.floor(Math.random() * 1e6) + 1);
+                    redoThreads(e)
+                }
+            };
+
+            $('#tbst').onclick = () => {
+                const e = els[selKey];
+                if(e && e.it && e.it.t === 'chr' && phase === 0){
+                    shapes[e.k] = straightShape();
+                    redoThreads(e)
+                }
+            };
+
+            board.addEventListener('pointerdown', ev => {
+                if(ev.target === board || ev.target === world){
+                    selKey = null;
+                    refreshSel()
+                }
+            });
+
+            const upd = () => {
+                const e = els[selKey];
+                if(e && e.it){
+                    place(e.it, e);
+                    posTb();
+                    drawFib();
+                    drawCleave();
+                }
+            };
+
+            const stepS = f => {
+                const e = els[selKey];
+                if(!e || !e.it) return;
+                e.it.sc = Math.max(0.3, Math.min(4, clampS(e.it, e) * f));
+                upd();
+            };
+
+            const stepR = g => {
+                const e = els[selKey];
+                if(!e || !e.it) return;
+                e.it.rot = (((e.it.rot || 0) + g) % 360 + 360) % 360;
+                upd();
+            };
+
+            $('#tbm').onclick = () => stepS(1 / 1.15);
+            $('#tbp').onclick = () => stepS(1.15);
+            $('#tbrl').onclick = () => stepR(-15);
+            $('#tbrr').onclick = () => stepR(15);
+
+            $('#tbn').addEventListener('input', ev => {
+                const e = els[selKey];
+                if(e && e.it && e.it.t === 'chr') names[e.k] = ev.target.value
+            });
+
+            new ResizeObserver(() => {
+                Object.values(els).forEach(e => e.it && place(e.it, e));
+                fit();
+                posTb();
+                drawFib();
+                drawCleave();
+            }).observe(board);
+
+            $('#pal').innerHTML = ['cell', 'nuc', 'cen', 'chr'].map(t => '<div class="prow"><b><i class="ic ic-' + t + '"></i>' + LBL[t] + '</b><div class="pbtn"><button class="btn" data-t="' + t + '" data-d="-1">\u2212</button><span id="pc-' + t + '">0</span><button class="btn" data-t="' + t + '" data-d="1">+</button></div></div>').join('') + '<p class="phint">Instruction and Definitions.</p>';
+            $('#pal').addEventListener('click', e => {
+                const b = e.target.closest('button');
+                if(b) setB(b.dataset.t, cnt(b.dataset.t) + +b.dataset.d)
+            });
+
+            $('#build').onclick = () => {
+                build = !build; bp = false;
+                board.classList.remove('playing');
+                if(timer){
+                    clearInterval(timer);
+                    timer = null
+                }
+                $('#play').textContent = '🧬';
+                $('bld').hidden = !build;
+                cvs.style.visibility = build ? 'hidden' : 'visible';
+                $('#build').textContent = build ? '🔚' : '🧬';
+                $('#cnt').min = build ? 0 : 2;
+                if(build){
+                    renderQuiz();
+                    showFormula();
+                } else {
+                    $('#cnt').value = n;
+                    setPhase(phase);
+                }
+            };
+
+            const mans = {}, bc = t => PB[phase].filter(x => x.t === t).length, chrN = () => bc('chr'), pairN = () => cnt('chr');
+            const numOpts = v => {
+                const c = [2 * v, v + 1, Math.max(0, v - 1), 2 * v + 1, Math.ceil(v / 2), 4 * v].filter((x, i, a) => x !== v && a.indexOf(x) === i); 
+                return [v, ...c.slice(0, 3)].sort((a, b) => a - b).map(String)
+            };
+
+            const qD = (q, f, need, ok, h) => ({q, f, need, ok, h});
+            const qS = (q, o, ok, h) => ({q, o, ok, h});
+            const MQ = [
+                [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
+                [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
+                [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
+                [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
+                [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
+            ];
+
+            function renderMCQ(){
+                $('#phname').textContent = PH[phase].n + ' (build)';
+                $('#phname').style.color = PH[phase].c;
+                $('#phtxt').textContent = BD[phase] + ' The questions use what you built in this page.';
+                const box = $('#qs');
+                box.innerHTML = '';
+                let got = 0, tot = 0;
+                MQ[phase].forEach((m, i) => {
+                    const d = document.createElement('div');
+                        d.className = 'q';
+                        d.innerHTML = '<label>' + (i + 1) + '. ' + m.q + '</label><div class="opts"></div><div class="msg"></div>';
+                        const msg = d.querySelector('.msg'), v = m.f ? m.f() : null;
+                        box.appendChild(d);
+                        if(m.f && !v){
+                            msg.style.color = 'var(--muted)';
+                            msg.textContent = 'Build first.';
+                            return;
+                        }
+                        const opts = m.f ? numOpts(v) : m.o.slice().sort(), right = m.f ? String(v) : m.o[0], key = phase + '|' + i, pick = mans[key];
+                        tot++;
+                        opts.forEach(t => {
+                            const b = document.createElement('button');
+                            b.className = 'opt' + (t === pick ? ' pick' : '');
+                            b.textContent = t;
+                            b.onclick = () => {
+                                mans[key] = t;
+                                renderMCQ();
+                            };
+                            d.querySelector('.opts').appendChild(b)
+                        });
+                        if(opts.includes(pick)){
+                            const ok = pick === right;
+                            if(ok) got++;
+                            d.classList.add(ok ? 'ok' : 'bad');
+                            msg.textContent = ok ? (m.f ? m.ok(v) : m.ok) : 'Not quite. ' + m.h;
+                        }
+                });
+                const done = tot > 0 && got === tot;
+                $('#fb').className = done ? 'done' : '';
+                $('#fbm').textContent = tot === 0 ? 'Build this phase to unlock some questions' : done ? 'Phase complete! 🥳' : got + ' of ' + tot + 'correct.';
+                $('#score').textContent = got + ' / ' + tot;
+            }
+            $('#cnt').addEventListener('change', e => cset(e.target.value));
+
+         
         </script>
     </body>
 </html>
