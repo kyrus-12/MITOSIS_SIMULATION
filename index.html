@@ -275,6 +275,385 @@
                 border-left:1px solid var(--line);
             }
         }
+        #bld[hidden]{
+            display:none;
+        }
+        #bld{
+            position:absolute; 
+            inset:0;
+            display:flex;
+            gap:8px;
+            padding:8px;
+            background:var(--bg);
+            z-index:2;
+        }
+        .pal{
+            flex:0 0 132px;
+            width:132px;
+            border: 2px solid var(--line);
+            border-radius:14px;
+            padding:8px;
+            overflow:auto;
+            background:var(--panel);
+        }
+        .prow{
+            margin-bottom:10px;
+        }
+        .prow b{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            font-size:13px;
+            margin-bottom:4px;
+        }
+        .pbtn{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:4px;
+        }
+        .pbtn .btn{
+            padding:4px 10px;
+        }
+        .pbtn span{
+            font-weight:700;
+        }
+        .ic{
+            display:inline-block;
+            width:14px;
+            height:14px;
+            border-radius:50%;
+        }
+        .ic-nuc{
+            border:2px dashed var(--nuc);
+        }
+        .ic-cen{
+            background:#fbbf24;
+        }
+        .ic-chr{
+            background:linear-gradient(135deg, #f472b6, #38bdf8);
+        }
+        .phint{
+            font-size:11px;
+            color:var(--muted);
+            margin:6px 0 0;
+            line-height:1.35;
+        }
+        .board{
+            flex:1;
+            min-width:0;
+            position:relative;
+            border:2px dashed var(--cellline);
+            border-radius:14px;
+            background:#fff;
+            overflow:auto;
+        }
+        #world{
+            position:relative;
+        }
+        .el.nt{
+            transition:none;
+        }
+        .el{
+            position:absolute;
+            z-index:2;
+            touch-action:none;
+            user-select:none;
+            transition:left 0.9s ease, top 0.9s ease, transform 0.4s, opacity 0.5s;
+        }
+        .el.nuc{
+            width:96px;
+            height:96px;
+            border:2px dashed var(--nuc);
+            border-radius:50%;
+            background:rgba(2, 132, 199, 0.8);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:12px;
+            font-weight:700;
+            color:var(--nuc);
+            cursor:grab;
+        }
+        .el.cen{
+            width:64px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap:2px;
+            font-size:11px;
+            cursor:grab;
+        }
+        .el.cen i{
+            width:26px;
+            height:26px;
+            border-radius:50%;
+            background:#fbbf24;
+            box-shadow:0 0 8px #fbbf24;
+        }
+        .el.chr{
+            line-height:0;
+        }
+        .el.chr .grip{
+            cursor:grab;
+            touch-action:none;
+        }
+        .el.chr input{
+            width:80px;
+            font:inherit;
+            font-size:12px;
+            text-align:center;
+            border:1px solid var(--line);
+            border-radius:8px;
+            padding:3px;
+            background:#fff;
+            color:#000;
+        }
+        .el.cell{
+            z-index:0;
+            border:4px solid var(--cellline);
+            border-radius:50%;
+            background:var(--cell);
+            cursor:grab;
+        }
+        .el.cell span{
+            position:absolute;
+            top:8px;
+            left:0;
+            right:0;
+            text-align:center;
+            font-size:11px;
+            font-weight:700;
+            color:var(--muted);
+        }
+        .ic-cell{
+            border:3px solid var(--cellline);
+        }
+        .el.drag{
+            transition:none;
+            z-index:5;
+            filter:drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+        }
+        .q > label{
+            display:block;
+            font-size:14px;
+            line-height:3;
+        }
+        .opts{
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+            margin-top:6px;
+        }
+        .opt{
+            border: 1px solid var(--line);
+            background:#fff;
+            color:#000;
+            border-radius:10px;
+            padding:6px 10px;
+            font:inherit;
+            font-size:13px;
+            cursor:pointer;
+        }
+        .opt.pick{
+            border-color:#6366f1;
+            background:#eef2ff;
+            font-weight:700;
+        }
+        .el.cell.drag{
+            z-index:0;
+        }
+        .el.sel{
+            outline:2px dashed #6366f1;
+            outline-offset:3px;
+        }
+        .grip{
+            overflow:visible;
+            transform-origin:50% 50%;
+        }
+        .board.playing .grip.ph1{
+            animation:cond 1.4s ease-in-out infinite alternate;
+        }
+        .board.playing .mv.ph2{
+            animation:tug 0.5s ease-in-out infinite alternate;
+        }
+        .board.playing .mc.ph3{
+            animation:pull 0.6s ease-in-out infinite alternate;
+        }
+        .board.playing .grip.ph4{
+            animation:wig 2.6s ease-in-out infinite;
+        }
+        .board.playing .grip.ph0 .rep{
+            stroke-dasharray:100;
+            animation:draw 2s ease-out infinite;
+        }
+        @keyframes tug{
+            from{ transform:translateX(-3px)} to {transform:translateX(3px)}
+        }
+        @keyframes pull{
+            from{ transform:translateX(0px)} to {transform:translateX(calc(var(--dir, 1) * 22px))}
+        }
+        .board.playing .el.nuc{
+            color:transparent;
+        }
+        .board.playing .el.cen{
+            font-size:0;
+        }
+        .board.playing .el.cell span{
+            display:none;
+        }
+        .board.playing .tb{
+            display:none;
+        }
+        .board.playing .el.sel{
+            outline:none;
+        }
+        .board.playing .el.cen i{
+            animation:glow 1.2s ease-in-out infinite alternate;
+        }
+        @keyframes glow{
+            from{ box-shadow:0 0 4px #fbbf24;} to {box-shadow:0 0 16px 4px #fbbf24}
+        }
+        .board.playing .el.nuc::after{
+            content:'';
+            position:absolute;
+            inset:-4px;
+            border:2px dashed var(--nuc);
+            border-radius:50%;
+            animation:ring 1.8s ease-out infinite;
+        }
+        @keyframes ring{
+            from{transform:scale(1); opacity:0.8} to {transform:scale(1.25); opacity:0}
+        }
+        .board.playing.p1 .el.nuc{
+            animation:dissolve 2.4s ease-in-out infinite alternate;
+        }
+        .board.playing.p4 .el.nuc{
+            animation:form 2.4s ease-in-out infinite alternate;
+        }
+        @keyframes dissolve{
+            from{opacity:1} to {opacity:0.15}
+        }
+        @keyframes form{
+            from{opacity:2; filter:blur(3px)} to {opacity:1; filter:none}
+        }
+        .board.cl .el.cell{
+            border-color:transparent;
+            background:transparent;
+        }
+        #cleave{
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            pointer-events:none;
+            z-index:0;
+        }
+        .mv, .rt{
+            display:block;
+            line-height:0;
+        }
+        .rt{
+            transition:transform 0.3s;
+        }
+        #fib{
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            pointer-events:none;
+            z-index:1;
+        }
+        #fib line{
+            stroke:#64748b;
+            stroke-width:1.2;
+            stroke-dasharray:5 4;
+            animation:dash 0.8s linear infinite;
+        }
+        @keyframes dash{
+            to{stroke-dashoffset:-9;}
+        }
+        @keyframes wig{
+            0%, 100% {transform:skewX(-7deg)} 50% {transform:skewX(7deg)}
+        }
+        @keyframes cond{
+            from{transform:scale(0.7, 1.35); opacity:0.6;} to {transform:none; opacity:1;}
+        }
+        @keyframes draw{
+            from{ stroke-dashoffset:100;} to {stroke-dashoffset:0;}
+        }
+        .tb{
+            position:absolute;
+            z-index:6;
+            display:flex;
+            align-items:center;
+            gap:4px;
+            padding:4px 6px;
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:10px;
+            box-shadow:0 2px 8px rgba(0, 0, 0, 0.25);
+            font-size:12px;
+            font-weight:600;
+        }
+        .tb[hidden]{
+            display:none;
+        }
+        .tb input{
+            width:96px;
+            font:inherit;
+            font-size:12px;
+            border:1px solid var(--line);
+            border-radius:8px;
+            padding:3px 6px;
+            color:#000;
+            background:#fff;
+        }
+        .tb .btn{
+            padding:2px 9px;
+        }
+        .bwrap{
+            flex:1;
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+        }
+        .bwrap .board{
+            flex:1;
+            min-height:0;
+        }
+        .plbl{
+            position:absolute;
+            z-index:7;
+            pointer-events:none;
+            padding:3px 10px;
+            border-radius: 11px;
+            border:1px solid rgba(0, 0, 0, 0.25);
+            font-size:12px;
+            font-weight:700;
+            color:#0b1020;
+            white-space:nowrap;
+        }
+        .plbl[hidden]{
+            display:none;
+        }
+        .hd{
+            display:none;
+            cursor:grab;
+            touch-action:none;
+        }
+        .el.sel .hd{
+            display:block;
+        }
+        .board.playing .hd{
+            display:none;
+        }
+        #bcap{
+            font-size:12px;
+            font-weight:600;
+            line-height:1.3;
+        }
     </style>
     </head>
     <body>
@@ -286,6 +665,7 @@
                     <button class="btn" id="prev">◀️</button>
                     <button class="btn" id="play">[ ▸ ]</button>
                     <button class="btn" id="next">▶️</button>
+                    <button class="btn" id="build">🧬</button>
                     <span class="cnt">Chromosomes
                         <button class="btn" id="minus">-</button><input id="cnt" type="number" min="2" max="46" inputmode="numeric" aria-label="Number of Chromosomes"><button class="btn" id="plus">+</button>
                     </span>
