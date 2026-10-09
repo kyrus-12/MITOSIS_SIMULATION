@@ -679,6 +679,33 @@
                 <div id="fb"><span id="fbm"></span><b id="score"></b></div>
             </aside>
         </div>
+
+        <div id="bld" hidden>
+            <div class="pal" id="pal"></div>
+            <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;">
+                <div class="board" id="board">
+                    <div id="world">
+                        <svg id="cleave"></svg>
+                        <svg id="fib"></svg>
+
+                        <div class="tb" id="tb" hidden>
+                            <span id="tbl"></span>
+                            <input id="tbl" type="text" maxlength="14" placeholder="Name" aria-label="Chromosome Name">
+                            <button class="btn" id="tbm" title="Smaller">-</button>
+                            <span id="tbz">100%</span>
+                            <button class="btn" id="tbp" title="Larger">+</button>
+                            <button class="btn" id="tbrl" title="Rotate Left">↺</button>
+                            <button class="btn" id="tbrr" title="Rotate Right">↻</button>
+                            <button class="btn" id="tbtg" title="Random Shapes">🔄</button>
+                            <button class="btn" id="tbst" title="Straighten">|</button>
+                        </div>
+                        <div id="pLbl" hidden style="position:absolute; z-index:5; padding:2px 8px; border-radius:8px; font-size:12px; font-weight:600; color:#000; white-space:nowrap; pointer-events:none;"></div>
+                    </div>
+                </div>
+                <div id="bcap"></div>
+            </div>
+        </div>
+        
         <script>
             const $ = s => document.querySelector(s), lerp = (a,b,k) => a+(b-a)*k;
             const PH = [
@@ -1744,7 +1771,7 @@
                     timer = null
                 }
                 $('#play').textContent = '🧬';
-                $('bld').hidden = !build;
+                $('#bld').hidden = !build;
                 cvs.style.visibility = build ? 'hidden' : 'visible';
                 $('#build').textContent = build ? '🔚' : '🧬';
                 $('#cnt').min = build ? 0 : 2;
