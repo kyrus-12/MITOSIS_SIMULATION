@@ -1357,10 +1357,10 @@
                 const lim = 1e9;
                 const a = Math.max(4, Math.min(ra * (1 + 0.3 * q), lim)), b = rb * (1 - 0.8 * q), mp = (u, v, sg) => ax === 'x' ? [cx + sg * u, cy + v] : [cx + v, cy + sg * u];
                 const f = u => 1 - q * Math.exp(- Math.pow(u / (0.3 * a), 2));
-                if(n <= 0){
+                if(n <= 0 || m < 0.002){
                     let d = '';
                     for(let i = 0; i < 220; i++){
-                        const  th = i / 120 * Math.PI * 2, u = a * Math.cos(th), v = b * Math.sin(th) * f(u), [x, y] = mp(u, v, 1);
+                        const  th = i / 220 * Math.PI * 2, u = a * Math.cos(th), v = b * Math.sin(th) * f(u), [x, y] = mp(u, v, 1);
                         d += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
                     }
                      return '<path d="' + d + 'Z" ' + st + '/>';
