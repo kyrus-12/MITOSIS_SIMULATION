@@ -662,53 +662,50 @@
                 <div class="steps" id="steps"></div>
                 <main>
                     <canvas id="c"></canvas>
-                <div id="bld" hidden>
-            <div class="pal" id="pal"></div>
-            <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;">
-                <div class="board" id="board">
-                    <div id="world">
-                        <svg id="cleave"></svg>
-                        <svg id="fib"></svg>
-
-                        <div class="tb" id="tb" hidden>
-                            <span id="tbl"></span>
-                            <input id="tbn" type="text" maxlength="14" placeholder="Name" aria-label="Chromosome Name">
-                            <button class="btn" id="tbm" title="Smaller">-</button>
-                            <span id="tbz">100%</span>
-                            <button class="btn" id="tbp" title="Larger">+</button>
-                            <button class="btn" id="tbrl" title="Rotate Left">↺</button>
-                            <button class="btn" id="tbrr" title="Rotate Right">↻</button>
-                            <button class="btn" id="tbtg" title="Random Shapes">🔄</button>
-                            <button class="btn" id="tbst" title="Straighten">|</button>
+                    <div id="bld" hidden>
+                         <div class="pal" id="pal"></div>
+                         <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;">
+                            <div class="board" id="board">
+                                <div id="world">
+                                    <svg id="cleave"></svg>
+                                     <svg id="fib"></svg>
+                                     
+                                     <div class="tb" id="tb" hidden>
+                                         <span id="tbl"></span>
+                                          <input id="tbn" type="text" maxlength="14" placeholder="Name" aria-label="Chromosome Name">
+                                          <button class="btn" id="tbm" title="Smaller">-</button>
+                                          <span id="tbz">100%</span>
+                                          <button class="btn" id="tbp" title="Larger">+</button>
+                                           <button class="btn" id="tbrl" title="Rotate Left">↺</button>
+                                           <button class="btn" id="tbrr" title="Rotate Right">↻</button>
+                                           <button class="btn" id="tbtg" title="Random Shapes">🔄</button>
+                                            <button class="btn" id="tbst" title="Straighten">|</button>
+                                         </div>
+                                          <div id="pLbl" hidden style="position:absolute; z-index:5; padding:2px 8px; border-radius:8px; font-size:12px; font-weight:600; color:#000; white-space:nowrap; pointer-events:none;"></div>
+                                         </div>
+                                        </div>
+                                    </div>
+                                </div>
+                             </main>
+                             
+                             <div class="ctrl">
+                                 <button class="btn" id="prev">◀️</button>
+                                  <button class="btn" id="play">[ ▸ ]</button>
+                                  <button class="btn" id="next">▶️</button>
+                                  <button class="btn" id="build">🧬</button>
+                                  <span class="cnt">Chromosomes
+                                    <button class="btn" id="minus">-</button><input id="cnt" type="number" min="2" max="46" inputmode="numeric" aria-label="Number of Chromosomes"><button class="btn" id="plus">+</button>
+                                 </span>
+                                </div>
+                                <p class="hint"></p>
+                            </section>
+                            <aside class="box">
+                                <div class="fhead"><div id="formula"></div><div id="phname"></div></div>
+                                <p id="phtxt"></p>
+                                <div id="qs"></div>
+                                <div id="fb"><span id="fbm"></span><b id="score"></b></div>
+                            </aside>
                         </div>
-                        <div id="pLbl" hidden style="position:absolute; z-index:5; padding:2px 8px; border-radius:8px; font-size:12px; font-weight:600; color:#000; white-space:nowrap; pointer-events:none;"></div>
-                    </div>
-                </div>
-                <div id="bcap"></div>
-            </div>
-        </div>
-    </main>
-
-                <div class="ctrl">
-                    <button class="btn" id="prev">◀️</button>
-                    <button class="btn" id="play">[ ▸ ]</button>
-                    <button class="btn" id="next">▶️</button>
-                    <button class="btn" id="build">🧬</button>
-                    <span class="cnt">Chromosomes
-                        <button class="btn" id="minus">-</button><input id="cnt" type="number" min="2" max="46" inputmode="numeric" aria-label="Number of Chromosomes"><button class="btn" id="plus">+</button>
-                    </span>
-                </div>
-                <p class="hint"></p>
-            </section>
-            <aside class="box">
-                <div class="fhead"><div id="formula"></div><div id="phname"></div></div>
-                <p id="phtxt"></p>
-                <div id="qs"></div>
-                <div id="fb"><span id="fbm"></span><b id="score"></b></div>
-            </aside>
-        </div>
-
-        
         
         <script>
             const $ = s => document.querySelector(s), lerp = (a,b,k) => a+(b-a)*k;
@@ -901,7 +898,7 @@
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
                 const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.45], [1.38 * u, u, 1]][ph];
                 const T = {
-                    a:cell[0], b:cell[1], p:cell[2], pole:[0.1, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0.6, 1, 1, 0][ph],
+                    a:cell[0], b:cell[1], p:cell[2], pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0.6, 1, 1, 0][ph],
                     n1:[1, 0.3, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
                 };
                 const minW = Math.max(2.2, 5 * sc);
@@ -1063,7 +1060,7 @@
                 ctx.globalAlpha = 1;
                 ctx.setLineDash([]);
 
-                const py = cy - (1 - Math.min(1, S.pole / 0.8)) * 0.78 * u, px = S.pole * S.a, pulse = 1 + 0.15 * Math.sin(t * 4);
+                const py = cy - (1 - Math.min(1, Math.max(0, (S.pole - 0.07) / 0.73))) * 0.78 * u, px = S.pole * S.a, pulse = 1 + 0.15 * Math.sin(t * 4);
                 const poles = [[cx - px, py], [cx + px, py]];
 
                 if(S.spin > 0.02){
@@ -1232,6 +1229,14 @@
                 ctx.strokeStyle = col;
                 ctx.lineWidth = lw;
                 ctx.stroke();
+                const cyc = ((t + i * 0.7) % 10) / 10, rp = clamp01((cyc - 0.1) / 0.55), fd = cyc > 0.9 ? (1 - cyc) / 0.1 : 1;
+                if(rp > 0){
+                    const o = 0.02 * R, n2 = Math.max(2, Math.round(rp * pts.length));ctx.globalAlpha = thr * (dim ? 0.55 : 0.95) * fd;
+                    ctx.beginPath();
+                    pts.slice(0, n2).forEach((pt, s) => s ? ctx.lineTo(p[0] + o, pt[1] + o) : ctx.moveTo(pt[0] + o, pt[1] + o));
+                    ctx.strokeStyle = 'hsl(' + hue(i) + ' 85% 70%)';
+                    ctx.stroke();
+                }
                 ctx.restore();
             }
 
@@ -1289,7 +1294,7 @@
                         dy = Math.sin(j * 2.4) * R * 0.5;
                     }
                     Lp.push({t, x : c.x + dx, y : c.y + dy});
-                } else if(t === 'cen') Lp.push({t, x : c.x + sd * R * (ph === 4 ? 0.9 : 0.8), y : ph === 4 ? c.y - 0.35 * R + st * 0.25 : c.y + st});
+                } else if(t === 'cen') Lp.push({t, x : c.x + sd * R * (ph === 4 ? 0.55 : 0.8), y : c.y + st});
                 else {
                     const per = Math.max(1, Math.floor(R * 1.5 / 34)), col = Math.floor(j / per), row = j % per;
                     const sx = (col % 2 ? 1 : -1) * Math.ceil(col / 2) * 26, yy = c.y + (row - (per - 1) / 2) * 34;
