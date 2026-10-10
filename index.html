@@ -720,8 +720,9 @@
                 {n: 'Telophase', c:'violet', t: 'Insert simple definition here or instruction.'},
             ];
 
+            const THREAD_LEN = 0.35;
             const HUE = [330, 200, 265, 155, 40], AN = [0.5, 2.4, 4.1, 1.3, 5.3], RR = [0.55, 0.75, 0.5, 0.85, 0.45], ROT = [0.6, 2.2, 1.1, 2.9, 0.2];
-            let n = 3, phase = 0, sel = -1, timer = null, W = 0, H = 0, R = 100, cur = null, t = 0, last = performance.now();
+            let thr = 1, n = 3, phase = 0, sel = -1, timer = null, W = 0, H = 0, R = 100, cur = null, t = 0, last = performance.now();
             const cvs = $('#c'), ctx = cvs.getContext('2d');
             let build = false;
 
@@ -911,7 +912,8 @@
                     const gx = (col - (cols - 1)/2) * cgap, gy = ((i % rows) - (inCol - 1)/2) * g;
                     if(ph < 2){
                         const L = 0.3 * uu, s = spot(i, 0.62 * u - 0.6 * L), k = ph == 0 ? 0.42 : 0.5;
-                        const px = cx + (s ? s [0] : Math.cos(AN[i]) * RR[i] * k * u), py = cy + (s ? s[1] : Math.sin(AN[i]) * RR[i] * k * u);
+                        const s0 = n <= 5 ? [Math.cos(6.2832 * i / n) * 0.1 * u, Math.sin(6.2832 * i / n) * 0.1 * u] : spot(i, 0.18 * u);
+                        const px = cx + (ph == 0 ? s0[0] : s ? s [0] : Math.cos(AN[i]) * RR[i] * k * u), py = cy + (ph == 0 ? s0[1] :s ? s[1] : Math.sin(AN[i]) * RR[i] * k * u);
                         const w = ph ? Math.max(minW, 0.035 * uu) : Math.max(Math.max(1.6, 2.5 * sc), 0.016 * uu), o = 0, x = ph ? 0.18 * L : 0.1* L;
                         A = mk(px - o, py, L, w, ph ? 0.25 : 1, ang(i), -x, x); B = mk(px + o, py, L, w, ph ? 0.25 : 1, ang(i), x, -x); 
                     } else if(ph == 2){
@@ -950,7 +952,12 @@
             function chromatid(c, i, k, hl, dim){
                 const col = 'hsl(' + hue(i) + ' ' + (k ? 85 : 80 ) + '% ' +(k ? 74 : 62) + '%)', [dx, dy] = drift(i, k);
                 ctx.save(); 
-                ctx.globalAlpha = dim ? 0.55 : 1;
+                const fa = (dim ? 0.55 : 1) * (1 - thr);
+                if(fa < 0.02){
+                    ctx.restore();
+                    return;
+                }
+                ctx.globalAlpha = fa;
                 ctx.translate(c.x + dx, c.y + dy);
                 ctx.rotate(c.ang);
                 const N = 22, amp = c.wave * c.L * 0.16, ph = i * 2 + k * 1.3;
@@ -1089,11 +1096,21 @@
                     ctx.shadowBlur = 0;
                 });
                 const order = [...S.ch.keys()].filter(i => i !== sel).concat(sel >= 0 ? [sel] : []);
-                order.forEach(i => S.ch[i].forEach((c, k) => chromatid(c, i, k, i === sel, sel >= 0 && i !== sel)));
+                order.forEach(i => {
+                    if(thr > 0.02) thread(S.ch[i][0], i, i === sel, sel >= 0 && i !== sel);
+                    S.ch[i].forEach((c, k) => chromatid(c, i, k, i === sel, sel >= 0 && i !== sel))
+                });
 
                 const pr = sel >= 0 ? S.ch[sel] : null, sep = pr && Math.hypot(pr[0].x - pr[1].x, pr[0].y - pr[1].y) > 0.3 * u;
-                if(pr)(sep ? pr : [pr[0]]).forEach(c => {
-                    const [dx, dy] = drift(sel, 0), r = Math.max(0.22 * u * scl(), 14) + Math.sin(t * 4) * 3;
+                if(pr)(sep ? pr : [pr[0]]).forEach(c0 => {
+                    let c = c0;
+                    const [dx, dy] = drift(sel, 0);
+                    let r = Math.max(0.22 * u * scl(), 14) + Math.sin(t * 4) * 3;
+                    if(thr > 0.5){
+                        const tp = threadPts(c0, sel), mx = tp.reduce((a, q) => a + q[0], 0) / tp.length, my = tp.reduce((a, q) => a + q[1], 0) / tp.length;
+                        c = {x : mx - dx, y : my - dy};
+                        r = Math.max(...tp.map(q => Math.hypot(q[0] - mx, q[1] - my))) + 10 + Math.sin(t * 4) * 2;
+                     }
                     ctx.save();
                     ctx.setLineDash([5, 5]);
                     ctx.lineDashOffset = -t * 18;
@@ -1109,6 +1126,7 @@
 
             function frame(now){
                 const dt = Math.min(0.05, (now- last) / 1000); last = now; t += dt;
+                thr = lerp(thr, phase === 0 ? 1 : 0, f);
                 if(W){
                     const T = target(phase), f = 1 - Math.exp(-dt * 3.5);
                     if(!cur)cur = JSON.parse(JSON.stringify(T));
@@ -1123,10 +1141,32 @@
                 requestAnimationFrame(frame);
             }
 
+            function segDist(px, py, a, b){
+                const vx = b[0] - a[0], vy = b[1] - a [1], l2 = vx * vx + vy * vy;
+                let k = l2 ? ((px - a[0]) * vx + (py - a[1]) * vy) / l2 : 0;
+                k = Math.max(0, Math.min(1, k));
+                return Math.hypot(px - (a[0] + k * vx), py - (a[1] + k * vy));
+            }
+
             function hit(e){
                 if(!cur)return -1;
                 const r = cvs.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
-                let best = -1, bd = Math.max(0.25 * R * scl(), 16);
+                let best = -1;
+                if(thr > 0.5){
+                    let bd = Math.max(9, threadLW() * 3);
+                    cur.ch.forEach((pr, i) => {
+                        const pts = threadPts(pr[0], i);
+                        for(let s = 0; s < pts.length - 1; s++){
+                            const d = segDist(mx, my, pts[s], pts[s + 1]);
+                            if(d < bd){
+                                bd = d;
+                                best = i;
+                            }
+                        }
+                    });
+                    return best;
+                } 
+                let bd = Math.max(0.25 * R * scl(), 16);
                 cur.ch.forEach((pr, i) => pr.forEach(c => {
                     const d = Math.hypot(mx - c.x, my - c.y);
                     if(d < bd){
@@ -1148,6 +1188,49 @@
             setN(10);
             setPhase(0);
             requestAnimationFrame(frame);
+
+            function threadLW(){
+                return Math.max(1.5, 0.02 * R * Math.min(1, 2 / Math.sqrt(n)));
+            }
+
+            function threadPts(c, i){
+                const u = R, [dx, dy] = drift(i, 0), k = 0.35 + 0.65 * thr, TP = 6.2832;
+                const f1 = 2.3 + 0.4 * ((i * 7) % 3), f2 = 5.4 + 0.4 * ((i * 5) % 4), f3 = 9.2 + 0.5 * ((i * 3) % 5);
+                const g1 = 3.3 + 0.4 * ((i * 5) % 3), g2 = 6.4 + 0.4 * ((i * 3) % 4), g3 = 10.2 + 0.5 * ((i * 7) % 4);
+                const A1 = 0.19 * u * k, A2 = 0.11 * u * k, A3 = 0.03 * u *k;
+                const ox = c.x + dx, oy = c.y + dy, NN = 90, q0 = (i * 0.137) % 1;
+                const pts = [];
+                for(let s = 0; s <= NN; s++){
+                    const q = q0 + THREAD_LEN * s / NN;
+                    pts.push([
+                        ox + A1 * Math.sin(f1 * TP * q + i * 1.9 + 0.5 + t * 0.25) + A2 * Math.sin(f2 * TP * q + i * 2.7 + 1.1 - t * 0.2) + A3 * Math.sin(f3 * TP * q + i * 3.3 + 2 + t * 0.8),
+                        oy + A1 * Math.sin(g1 * TP * q + i * 1.3 + 0.2 - t * 0.22) + A2 * Math.sin(g2 * TP * q + i * 2.1 + 0.9 + t * 0.18) + A3 * Math.sin(g3 * TP * q + i * 0.7 + 1.7 - t * 0.7)
+                    ]);
+                } 
+                return pts;
+            }
+
+            function thread(c, i, hl, dim){
+                const col = 'hsl(' + hue(i) + ' 80% 50%)';
+                const pts = threadPts(c, i), lw = threadLW();
+                ctx.save();
+                ctx.globalAlpha = thr * (dim ? 0.55 : 0.95);
+                ctx.beginPath();
+                pts.forEach((pt, s) => s ? ctx.lineTo(pt[0], pt[1]) : ctx.moveTo(pt[0], pt[1]));
+                ctx.lineCap = ctx.lineJoin = 'round';
+                if(hl){
+                    ctx.shadowColor = col;
+                    ctx.shadowBlur = 18 + 6 * Math.sin(t * 5);
+                    ctx.strokeStyle = '#111';
+                    ctx.lineWidth = lw  + 3;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+                ctx.strokeStyle = col;
+                ctx.lineWidth = lw;
+                ctx.stroke();
+                ctx.restore();
+            }
 
             
             const PB = [[], [], [], [], []], names = [], els = {}, CAP = 2000, CD = 360, LBL = {cell:'Cell membrane', nuc:'Nucleus', cen:'Centriole', chr:'Chromosome'};
@@ -1779,7 +1862,7 @@
                     clearInterval(timer);
                     timer = null
                 }
-                $('#play').textContent = '[ ▸ ]';
+                $('#play').textContent = '❚❚';
                 $('#bld').hidden = !build;
                 cvs.style.visibility = build ? 'hidden' : 'visible';
                 $('#build').textContent = build ? '🔚' : '🧬';
