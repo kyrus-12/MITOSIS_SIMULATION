@@ -684,6 +684,7 @@
                                           <div id="pLbl" hidden style="position:absolute; z-index:5; padding:2px 8px; border-radius:8px; font-size:12px; font-weight:600; color:#000; white-space:nowrap; pointer-events:none;"></div>
                                          </div>
                                         </div>
+                                        <div id="bcap"></div>
                                     </div>
                                 </div>
                              </main>
@@ -1233,7 +1234,7 @@
                 if(rp > 0){
                     const o = 0.02 * R, n2 = Math.max(2, Math.round(rp * pts.length));ctx.globalAlpha = thr * (dim ? 0.55 : 0.95) * fd;
                     ctx.beginPath();
-                    pts.slice(0, n2).forEach((pt, s) => s ? ctx.lineTo(p[0] + o, pt[1] + o) : ctx.moveTo(pt[0] + o, pt[1] + o));
+                    pts.slice(0, n2).forEach((pt, s) => s ? ctx.lineTo(pt[0] + o, pt[1] + o) : ctx.moveTo(pt[0] + o, pt[1] + o));
                     ctx.strokeStyle = 'hsl(' + hue(i) + ' 85% 70%)';
                     ctx.stroke();
                 }
@@ -1870,7 +1871,7 @@
                     clearInterval(timer);
                     timer = null
                 }
-                $('#play').textContent = '❚❚';
+                $('#play').textContent = '[ ▸ ]';
                 $('#bld').hidden = !build;
                 cvs.style.visibility = build ? 'hidden' : 'visible';
                 $('#build').textContent = build ? '🔚' : '🧬';
