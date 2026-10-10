@@ -477,8 +477,8 @@
         .board.playing .mv.ph2{
             animation:tug 0.5s ease-in-out infinite alternate;
         }
-        .board.playing .mc.ph3{
-            animation:pull 0.6s ease-in-out infinite alternate;
+        .board.playing .mv.ph3{
+            animation:pull 2.4s ease-in-out infinite alternate;
         }
         .board.playing .grip.ph4{
             animation:wig 2.6s ease-in-out infinite;
@@ -899,13 +899,16 @@
 
             function target(ph){
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
-                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.1], [1.38 * u, u, 1]][ph];
+                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.45], [1.38 * u, u, 1]][ph];
                 const T = {
                     a:cell[0], b:cell[1], p:cell[2], pole:[0.1, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0.6, 1, 1, 0][ph],
                     n1:[1, 0.3, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
                 };
                 const minW = Math.max(2.2, 5 * sc);
                 const g = Math.min(0.4 * uu, 1.6 * u/(n - 1)), cols = 1, rows = n, cgap = 0;
+                const xs = 0.6 * uu / cell[0], sn = Math.sqrt(1 - xs * xs);
+                const room = cell[1] * sn * (1 -  cell[2] * Math.pow(sn, 8)) - 0.16 * uu - 0.04 * u;
+                const fit = Math.min(1, Math.max(0.1, room / (((n -1) / 2 * g) || 1)));
                 for(let i = 0; i < n; i++){
                     let A, B;
                     const col = Math.floor(i/rows), inCol = col == cols - 1 ? n - col * rows : rows;
@@ -921,7 +924,7 @@
                         A = mk(cx + gx, cy + gy, L, w, 0, 0, -0.18 * L, 0.18 * L); B = mk(cx + gx, cy + gy, L, w, 0, 0, 0.18 * L, -0.18 * L);
                     } else if(ph == 3){
                         const L = 0.28 * uu, w = Math.max(minW, 0.035 * uu);
-                        A = mk(cx - 0.6 * u + gx, cy + gy * 0.9, L, w, 0, 0, 0.32 * L, 0.32 * L); B = mk(cx + 0.6 * u + gx, cy + gy * 0.9, L, w, 0, 0, -0.32 * L, -0.32 * L);
+                        A = mk(cx - 0.6 * u + gx, cy + gy * fit, L, w, 0, 0, 0.32 * L, 0.32 * L); B = mk(cx + 0.6 * u + gx, cy + gy * fit, L, w, 0, 0, -0.32 * L, -0.32 * L);
                     } else {
                         const L = 0.2 * uu, w = Math.max(Math.max(2, 3 * sc), 0.022 * uu), s = spot(i, 0.38 * u - 0.6 * L);
                         const sx = s ? s[0] : Math.cos(Math.PI * 2 * i / n) * 0.17 * u, sy = s ? s[1] : Math.sin(Math.PI * 2 * i / n) * 0.17 * u;
@@ -1126,9 +1129,9 @@
 
             function frame(now){
                 const dt = Math.min(0.05, (now- last) / 1000); last = now; t += dt;
-                thr = lerp(thr, phase === 0 ? 1 : 0, f);
                 if(W){
                     const T = target(phase), f = 1 - Math.exp(-dt * 3.5);
+                    thr = lerp(thr, phase === 0 ? 1 : 0, f);
                     if(!cur)cur = JSON.parse(JSON.stringify(T));
                     else {
                         while(cur.ch.length > n)cur.ch.pop(); 
@@ -1286,7 +1289,7 @@
                         dy = Math.sin(j * 2.4) * R * 0.5;
                     }
                     Lp.push({t, x : c.x + dx, y : c.y + dy});
-                } else if(t === 'cen') Lp.push({t, x : c.x + sd * R * (ph === 4 ? 0.55 : 0.8), y : c.y + st});
+                } else if(t === 'cen') Lp.push({t, x : c.x + sd * R * (ph === 4 ? 0.9 : 0.8), y : ph === 4 ? c.y - 0.35 * R + st * 0.25 : c.y + st});
                 else {
                     const per = Math.max(1, Math.floor(R * 1.5 / 34)), col = Math.floor(j / per), row = j % per;
                     const sx = (col % 2 ? 1 : -1) * Math.ceil(col / 2) * 26, yy = c.y + (row - (per - 1) / 2) * 34;
@@ -1438,7 +1441,7 @@
 
             function cleavePath(cx, cy, ra, rb, q, m, ax, st, circ){
                 const lim = 1e9;
-                const a = Math.max(4, Math.min(ra * (1 + 0.3 * q), lim)), b = rb * (1 - 0.8 * q), mp = (u, v, sg) => ax === 'x' ? [cx + sg * u, cy + v] : [cx + v, cy + sg * u];
+                const a = Math.max(4, Math.min(ra * (1 + 0.3 * q), lim)), b = rb * (1 - 0.1 * q), mp = (u, v, sg) => ax === 'x' ? [cx + sg * u, cy + v] : [cx + v, cy + sg * u];
                 const f = u => 1 - q * Math.exp(- Math.pow(u / (0.3 * a), 2));
                 if(n <= 0 || m < 0.002){
                     let d = '';
