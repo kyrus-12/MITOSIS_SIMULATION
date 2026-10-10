@@ -1346,7 +1346,7 @@
 
             function bplay(){
                 bp = !bp;
-                $('#play').textContent = bp ? '[ ▸ ]' : '❚❚';
+                $('#play').textContent = bp ? '❚❚' : '[ ▸ ]';
                 sync();
             }
 
@@ -1871,7 +1871,7 @@
                     clearInterval(timer);
                     timer = null
                 }
-                
+                $('#play').textContent = '[ ▸ ]';
                 $('#bld').hidden = !build;
                 cvs.style.visibility = build ? 'hidden' : 'visible';
                 $('#build').textContent = build ? '🔚' : '🧬';
