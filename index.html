@@ -1345,7 +1345,6 @@
             const clampS = (it, e) => dims(it, e).s;
 
             function bplay(){
-                if(build){ bplay(); return}
                 bp = !bp;
                 $('#play').textContent = bp ? '❚❚' : '[ ▸ ]';
                 sync();
