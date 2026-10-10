@@ -897,15 +897,15 @@
 
             function target(ph){
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
-                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.45], [1.38 * u, u, 1]][ph];
+                const nuA = [1, 0.3, 0, 0, 1][ph];
+                const cA = ph < 3 ? [cx, cy, u, u, 1, nuA] : ph === 3 ? [cx - 0.42 * u, cy, 0.7 * u, u, 1, 0] : [cx - 0.6 * u, cy, 0.68 * u, 0.5 * u, 1, 1];
+                const cB = ph < 3 ? [cx, cy, u, u, 0, 0]   : ph === 3 ? [cx + 0.42 * u, cy, 0.7 * u, u, 1, 0] : [cx + 0.6 * u, cy, 0.68 * u, 0.5 * u, 1, 1];
                 const T = {
-                    a:cell[0], b:cell[1], p:cell[2], pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0.6, 1, 1, 0][ph],
-                    n1:[1, 0.3, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
+                    c:[cA, cB], px:[0.07, 0.8, 0.9, 0.98, 0.98][ph] * u, pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0.6, 1, 1, 0][ph], ch:[]
                 };
                 const minW = Math.max(2.2, 5 * sc);
                 const g = Math.min(0.4 * uu, 1.6 * u/(n - 1)), cols = 1, rows = n, cgap = 0;
-                const xs = 0.6 * uu / cell[0], sn = Math.sqrt(1 - xs * xs);
-                const room = cell[1] * sn * (1 -  cell[2] * Math.pow(sn, 8)) - 0.16 * uu - 0.04 * u;
+                const room = u * Math.sqrt(1 - Math.pow((0.6 - 0.42) / 0.7, 2)) - 0.16 * uu - 0.04 * u;
                 const fit = Math.min(1, Math.max(0.1, room / (((n -1) / 2 * g) || 1)));
                 for(let i = 0; i < n; i++){
                     let A, B;
@@ -932,7 +932,7 @@
                 }
                 return T;
             }
-            const SK = ['a', 'b', 'p', 'pole', 'spin', 'n1', 'n2', 'nOff', 'nr', 'cOff'], CK = ['x', 'y', 'tx', 'bx', 'L', 'w', 'wave', 'ang'];
+            const SK = ['pole', 'spin', 'px'], CK = ['x', 'y', 'tx', 'bx', 'L', 'w', 'wave', 'ang'];
 
             function cellPath(cx, cy, a, b, p){
                 ctx.beginPath();
@@ -1020,43 +1020,23 @@
                 const cx = W /2, cy = H / 2, u = R, S = cur;
                 ctx.clearRect(0, 0, W, H);
 
-                const ca = Math.max(0, Math.min(1, (S.p - 0.75) / 0.2));
-                ctx.lineWidth = 3;
-                if(ca < 1){
-                    ctx.globalAlpha = 1 - ca;
-                    cellPath(cx, cy, S.a, S.b, S.p);
-                    ctx.fillStyle = g('--cell');
-                    ctx.fill();
-                    ctx.strokeStyle = g('--cellline');
-                    ctx.stroke()
-                }
-                if(ca > 0){
-                    ctx.globalAlpha = ca;
-                    [-1, 1].forEach(sg => {
-                        ctx.beginPath();
-                        ctx.arc(cx + sg * S.cOff, cy, 0.6 * u, 0, 7);
-                        ctx.fillStyle = g('--cell');
-                        ctx.fill();
-                        ctx.strokeStyle = g('--cellline');
-                        ctx.stroke()
-                    })
-                }
-                ctx.globalAlpha = 1;
-
-                ctx.setLineDash([7, 5]);
-                ctx.lineDashOffset = -t * 6;
-                [[S.n1, cx - S.nOff], [S.n2, cx + S.nOff]].forEach(([al, x]) => {
+                [0, 1].forEach(pass => S.c.forEach(([x, y, ea, eb, al]) => {
                     if(al < 0.02) return;
                     ctx.globalAlpha = al;
                     ctx.beginPath();
-                    ctx.arc(x, cy, S.nr, 0, 7);
-                    ctx.fillStyle = g('--nuc');
-                    ctx.globalAlpha = al * 0.1;
-                    ctx.fill();
-                    ctx.globalAlpha = al;
-                    ctx.strokeStyle = g('--nuc');
-                    ctx.lineWidth = 2.5;
-                    ctx.stroke();
+                    ctx.ellipse(x, y, Math.max(1, ea), Math.max(1, eb), 0, 0, 7);
+                    if(pass == 0){ ctx.lineWidth = 6; ctx.strokeStyle = g('--cellline'); ctx.stroke(); }
+                    else { ctx.fillStyle = g('--cell'); ctx.fill(); }
+                }));
+                ctx.setLineDash([7, 5]);
+                ctx.lineDashOffset = -t * 6;
+                S.c.forEach(([x, y, ea, eb, al, nu]) => {
+                    const k = al * nu;
+                    if(k < 0.02) return;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 0.62 * Math.min(ea, eb), 0, 7);
+                    ctx.globalAlpha = k * 0.1; ctx.fillStyle = g('--nuc'); ctx.fill();
+                    ctx.globalAlpha = k; ctx.strokeStyle = g('--nuc'); ctx.lineWidth = 2.5; ctx.stroke();
                 });
                 ctx.globalAlpha = 1;
                 ctx.setLineDash([]);
@@ -1135,6 +1115,7 @@
                         while(cur.ch.length > n)cur.ch.pop(); 
                         while(cur.ch.length < n)cur.ch.push(JSON.parse(JSON.stringify(T.ch[cur.ch.length])));
                         SK.forEach(k => cur[k] = lerp(cur[k], T[k], f));
+                        cur.c.forEach((e, i) => e.forEach((v, m) => e[m] = lerp(v, T.c[i][m], f)));
                         cur.ch.forEach((pr, i) => pr.forEach((c, k) => CK.forEach(q => c[q] = lerp(c[q], T.ch[i][k][q], f))))
                     }
                     draw();
@@ -1428,11 +1409,11 @@
                 else fl = false;
             }
 
-            let cl = false, ct0 = 0;
+            let cl = false, ct0 = 0, cph = -1;
             const clamp01 = x => Math.max(0, Math.min(1, x)), ease = x => x * x * (3 - 2 * x), seg = (a, b, c) => ease(clamp01((a - b) / (c - b)));
 
             function cleaveOn(){
-                return build && bp && phase === 4 && cnt('cell') > 0;
+                return build && bp && (phase === 3 || phase === 4) && cnt('cell') > 0;
             }
 
             function cleaveLoop(){
@@ -1440,36 +1421,20 @@
                     drawCleave();
                     requestAnimationFrame(cleaveLoop);
                 } else {
-                    cl = false;
+                    cl = false, cph = -1;
                     $('#cleave').innerHTML = '';
                 }
             }
 
-            function cleavePath(cx, cy, ra, rb, q, m, ax, st, circ){
-                const lim = 1e9;
-                const a = Math.max(4, Math.min(ra * (1 + 0.3 * q), lim)), b = rb * (1 - 0.1 * q), mp = (u, v, sg) => ax === 'x' ? [cx + sg * u, cy + v] : [cx + v, cy + sg * u];
-                const f = u => 1 - q * Math.exp(- Math.pow(u / (0.3 * a), 2));
-                if(n <= 0 || m < 0.002){
-                    let d = '';
-                    for(let i = 0; i < 220; i++){
-                        const  th = i / 220 * Math.PI * 2, u = a * Math.cos(th), v = b * Math.sin(th) * f(u), [x, y] = mp(u, v, 1);
-                        d += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
-                    }
-                     return '<path d="' + d + 'Z" ' + st + '/>';
+            function cleavePath(cx, cy, ra, rb, q, st){
+                const a = ra * (1 + 0.3 * q), b = rb * (1 - 0.1 * q);
+                const f = u => 1 - q * Math.exp(-Math.pow(u / (0.3 * a), 2));
+                let d = '';
+                for(let i = 0; i < 220; i++){
+                    const th = i / 220 * Math.PI * 2, u = a * Math.cos(th), v = b * Math.sin(th) * f(u);
+                    d += (i ? 'L' : 'M') + (cx + u).toFixed(1) + ' ' + (cy + v).toFixed(1);
                 }
-                const NP = 80, gap = a * 0.05, rfa = Math.max(3, a * 0.5 - gap), rfb = circ ? rfa : b * 0.9;
-                let h = '';
-                [-1, 1].forEach(sg => {
-                    let d = '';
-                    for(let i = 0; i < NP; i++){
-                        const th = -Math.PI / 2 + i / NP * Math.PI, u = a * Math.cos(th), v = b * Math.sin(th) * f(u);
-                        const hx = gap * m + u , ccx = gap * m + rfa, qx = ccx + rfb * Math.cos(2 * th), qy = rfb * Math.sin(2 * th);
-                        const [x, y] = mp(hx + (qx - hx) * m, v + (qy - v) * m, sg);
-                        d += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
-                    }
-                    h += '<path d="' + d + 'Z" ' + st + '/>';
-                });
-                return h;
+                return '<path d="' + d + 'Z" ' + st + '/>';
             }
 
             function drawCleave(){
@@ -1483,20 +1448,21 @@
                     c.innerHTML = '';
                     return;
                 }
-                if(!cl){
+                if(!cl || cph !== phase){
+                    if(!cl) requestAnimationFrame(cleaveLoop);
                     cl = true;
+                    cph = phase;
                     ct0 = performance.now();
-                    requestAnimationFrame(cleaveLoop);
                 }
-                const tt = ((performance.now() - ct0) / 7000) % 1;
-                const q = seg(tt, 0.1, 0.55) * (1 - seg(tt, 0.94, 1)), m = seg(tt, 0.55, 0.75) * (1 - seg(tt, 0.88, 0.94));
+                const tt = Math.min(1, (performance.now() - ct0) / 5000);
+                const q = phase === 3 ? 0.25 * seg(tt, 0.05, 0.6) : 0.25 + 0.25 * seg(tt, 0.05, 0.6);
                 const st = 'style="fill:var(--cell); stroke:var(--cellline); stroke-width:4; stroke-linejoin:round;"';
                 let h = '';
                 const vw = view();
                 cells.forEach(e => {
                     const v = e.vis, cx = v.cx, cy = v.cy, rr = Math.max(v.w, v.h) * 0.75;
                     if(cx + rr < vw.x0 || cx - rr > vw.x1 || cy + rr < vw.y0 || cy - rr > vw.y1) return;
-                    h += cleavePath(cx, cy, v.w / 2 - 2, v.h / 2 - 2, q, m, 'x', st, true);
+                    h += cleavePath(cx, cy, v.w / 2 - 2, v.h / 2 - 2, q, st);
                 });
                 c.innerHTML = h;
             }
