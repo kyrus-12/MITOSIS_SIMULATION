@@ -1445,7 +1445,7 @@
                     requestAnimationFrame(cleaveLoop);
                 } else {
                     cl = false;
-                    $('#cleave').innerHTML = '';
+                    drawCleave();
                 }
             }
 
@@ -1487,7 +1487,7 @@
                     c.innerHTML = '';
                     return;
                 }
-                if(!cl){
+                if(bp && !cl){
                     cl = true;
                     ct0 = performance.now();
                     requestAnimationFrame(cleaveLoop);
