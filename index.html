@@ -897,7 +897,7 @@
 
             function target(ph){
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
-                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.45], [1.38 * u, u, 1]][ph];
+                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.45], [1.38 * u, 0.95 * u, 0.86]][ph];
                 const T = {
                     a:cell[0], b:cell[1], p:cell[2], pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0.6, 1, 1, 0][ph],
                     n1:[1, 0.3, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
@@ -1020,7 +1020,7 @@
                 const cx = W /2, cy = H / 2, u = R, S = cur;
                 ctx.clearRect(0, 0, W, H);
 
-                const ca = Math.max(0, Math.min(1, (S.p - 0.75) / 0.2));
+                const ca = 0;
                 ctx.lineWidth = 3;
                 if(ca < 1){
                     ctx.globalAlpha = 1 - ca;
@@ -1304,7 +1304,7 @@
                         Lp.push({t, x : c.x + a, y : c.y + b});
                     } else if(ph === 2) Lp.push({t, x : c.x + sx, y : yy});
                     else {
-                        const off = (ph === 3 ? 0.2 : 0.5) * R;
+                        const off = (ph === 3 ? 0.42 : 0.55) * R;
                         Lp.push({t, side : 0, x : c.x - off + sx, y : yy}, {t, side : 1, x : c.x + off + sx, y : yy})
                     }
                 }
@@ -1432,11 +1432,11 @@
             const clamp01 = x => Math.max(0, Math.min(1, x)), ease = x => x * x * (3 - 2 * x), seg = (a, b, c) => ease(clamp01((a - b) / (c - b)));
 
             function cleaveOn(){
-                return build && bp && phase === 4 && cnt('cell') > 0;
+                return build && (phase === 3 || phase === 4) && cnt('cell') > 0;
             }
 
             function cleaveLoop(){
-                if(cleaveOn()){
+                if(cleaveOn() && bp){
                     drawCleave();
                     requestAnimationFrame(cleaveLoop);
                 } else {
@@ -1489,7 +1489,8 @@
                     requestAnimationFrame(cleaveLoop);
                 }
                 const tt = ((performance.now() - ct0) / 7000) % 1;
-                const q = seg(tt, 0.1, 0.55) * (1 - seg(tt, 0.94, 1)), m = seg(tt, 0.55, 0.75) * (1 - seg(tt, 0.88, 0.94));
+                const qm = phase === 3 ? 0.4 :0.85;
+                const q = bp ? qm * seg(tt, 0.1, 0.65) * (1 - seg(tt, 0.94, 1)): qm, m = 0;
                 const st = 'style="fill:var(--cell); stroke:var(--cellline); stroke-width:4; stroke-linejoin:round;"';
                 let h = '';
                 const vw = view();
