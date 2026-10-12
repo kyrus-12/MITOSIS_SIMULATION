@@ -390,6 +390,26 @@
             border-radius:50%;
             background:#fbbf24;
             box-shadow:0 0 8px #fbbf24;
+            position:relative;
+        }
+        .el.cen i::before,
+        .el.cen i::after{
+            content:'';
+            position:absolute;
+            background:#b45309;
+            border-radius:4px;
+        }
+        .el.cen i::before{ 
+            width:11px; 
+            height:5px; 
+            left:3px; 
+            top:14px;
+        }  
+        .el.cen i::after{ 
+            width:5px; 
+            height:11px; 
+            left:17px; 
+            top:6px;
         }
         .el.chr{
             line-height:0;
@@ -899,7 +919,7 @@
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
                 const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.45], [1.38 * u, 0.95 * u, 0.86]][ph];
                 const T = {
-                    a:cell[0], b:cell[1], p:cell[2], pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0.6, 1, 1, 0][ph],
+                    a:cell[0], b:cell[1], p:cell[2], pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0, 1, 1, 0][ph],
                     n1:[1, 0.3, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
                 };
                 const minW = Math.max(2.2, 5 * sc);
@@ -1099,6 +1119,14 @@
                     ctx.shadowBlur = '12';
                     ctx.fill();
                     ctx.shadowBlur = 0;
+                    const r = 0.05 * u * pulse;
+                    ctx.strokeStyle = '#b45309';
+                    ctx.lineCap = 'round';
+                    ctx.lineWidth = Math.max(1.2, r * 0.3);
+                    ctx.beginPath();
+                    ctx.moveTo(x - r * 0.5, y + r * 0.3); ctx.lineTo(x - r * 0.1, y + r * 0.3);
+                    ctx.moveTo(x + r * 0.32, y - r * 0.5); ctx.lineTo(x + r * 0.32, y - r * 0.1);
+                    ctx.stroke();
                 });
                 const order = [...S.ch.keys()].filter(i => i !== sel).concat(sel >= 0 ? [sel] : []);
                 order.forEach(i => {
@@ -1248,7 +1276,7 @@
             
             const PB = [[], [], [], [], []], names = [], els = {}, CAP = 2000, CD = 360, LBL = {cell:'Cell membrane', nuc:'Nucleus', cen:'Centriole', chr:'Chromosome'};
             const board = $('#board'), world = $('#world'), cnt = t => PB[phase].filter(x => x.t === t && !x.side).length;
-            const sided = ph => ph >= 3, FIBP = [1, 2, 3];
+            const sided = ph => ph >= 3, FIBP = [2, 3];
             const rad = c => CD * (c.sc || 1) / 2;
 
             function grp(it){
