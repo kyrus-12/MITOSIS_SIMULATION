@@ -903,10 +903,12 @@
                     n1:[1, 0.3, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
                 };
                 const minW = Math.max(2.2, 5 * sc);
-                let g = Math.min(0.4 * uu, 1.6 * u/(n - 1)), cols = 1, rows = n, cgap = 0;
+                const g = Math.min(0.4 * uu, 1.6 * u/(n - 1)), cols = 1, rows = n, cgap = 0;
                 const xs = (ph === 3 ? 0.6 * u : 0.6 * uu) / cell[0], sn = Math.sqrt(1 - xs * xs);
                 const room = cell[1] * sn * (1 -  cell[2] * Math.pow(sn, 8)) - 0.16 * uu - 0.04 * u;
                 const fit = Math.min(1, Math.max(0.1, room / (((n -1) / 2 * g) || 1)));
+                cols = 1; rows = n; cgap = 0;
+                g = Math.min(0.4 * uu, 2 * room / Math.max(1, n));
                 for(let i = 0; i < n; i++){
                     let A, B;
                     const col = Math.floor(i/rows), inCol = col == cols - 1 ? n - col * rows : rows;
@@ -921,8 +923,6 @@
                         const L = 0.28 * uu, w = Math.max(minW, 0.035 * uu);
                         A = mk(cx + gx, cy + gy, L, w, 0, 0, -0.18 * L, 0.18 * L); B = mk(cx + gx, cy + gy, L, w, 0, 0, 0.18 * L, -0.18 * L);
                     } else if(ph == 3){
-                        cols = 1; rows = n; cgap = 0;
-                        g = Math.min(0.4 * uu, 2 * room / Math.max(1, n));
                         const w = Math.min(Math.max(minW, 0.035 * uu), 0.2 * g), L = Math.min(0.28 * uu, 0.7 * g);
                         A = mk(cx - 0.6 * u + gx, cy + gy * fit, L, w, 0, 0, 0.32 * L, 0.32 * L); B = mk(cx + 0.6 * u + gx, cy + gy * fit, L, w, 0, 0, -0.32 * L, -0.32 * L);
                     } else {
