@@ -922,7 +922,7 @@
                         A = mk(cx + gx, cy + gy, L, w, 0, 0, -0.18 * L, 0.18 * L); B = mk(cx + gx, cy + gy, L, w, 0, 0, 0.18 * L, -0.18 * L);
                     } else if(ph == 3){
                         cols = 1; rows = n; cgap = 0;
-                        g = Math.min(0.4 * uu, 2 * room / Math.max(1, n));
+                        g = Math.min(0.4 * uu, 1.6 * room / Math.max(1, n));
                         const w = Math.min(Math.max(minW, 0.035 * uu), 0.2 * g), L = Math.min(0.28 * uu, 0.7 * g);
                         A = mk(cx - 0.6 * u + gx, cy + gy * fit, L, w, 0, 0, 0.32 * L, 0.32 * L); B = mk(cx + 0.6 * u + gx, cy + gy * fit, L, w, 0, 0, -0.32 * L, -0.32 * L);
                     } else {
