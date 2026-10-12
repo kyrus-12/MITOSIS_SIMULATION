@@ -1113,13 +1113,11 @@
                 }
                 poles.forEach(([x, y]) => {
                     ctx.beginPath();
-                    ctx.arc(x, y, 0.05 * u * pulse, 0, 7);
                     ctx.fillStyle = '#fbbf24';
                     ctx.shadowColor = '#fbbf24';
                     ctx.shadowBlur = '12';
                     ctx.fill();
                     ctx.shadowBlur = 0;
-                    const r = 0.05 * u * pulse;
                     ctx.strokeStyle = '#b45309';
                     ctx.lineCap = 'round';
                     ctx.lineWidth = Math.max(1.2, r * 0.3);
