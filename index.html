@@ -753,12 +753,12 @@
         <script>
             const $ = s => document.querySelector(s), lerp = (a,b,k) => a+(b-a)*k;
             const PH = [
-                {n: 'Interphase', c:'violet', t: 'Insert simple definition here or instruction.'},
-                {n: 'Prophase', c:'violet', t: 'Insert simple definition here or instruction.'},
-                {n: 'Metaphase', c:'violet', t: 'Insert simple definition here or instruction.'},
-                {n: 'Anaphase', c:'violet', t: 'Insert simple definition here or instruction.'},
-                {n: 'Telophase', c:'violet', t: 'Insert simple definition here or instruction.'},
-                {n: 'Cytokinesis', c:'violet', t: 'Insert simple definition here or instruction.'},
+                {n: 'Interphase', c:'violet', t: ''},
+                {n: 'Prophase', c:'violet', t: ''},
+                {n: 'Metaphase', c:'violet', t: ''},
+                {n: 'Anaphase', c:'violet', t: ''},
+                {n: 'Telophase', c:'violet', t: ''},
+                {n: 'Cytokinesis', c:'violet', t: ''},
             ];
 
             const THREAD_LEN = 0.35;
@@ -927,8 +927,15 @@
                 $('#score').textContent = all + ' / '+tot;
             }
 
-
-            $('#cnt').addEventListener('change', e => setN(e.target.value));
+            $('#cnt').addEventListener('change', e => {
+                if(build) cset(Math.max(0, Math.min(46, Math.round(+e.target.value) || 0)));
+                else setN(e.target.value);
+            });
+            
+            const stepCount = d => {
+                if(build) cset(Math.max(0, Math.min(46, cget() + d)));
+                else setN(n + d);
+            };
 
             $('#retry').addEventListener('click', () => {
                 if(build){
@@ -948,9 +955,9 @@
                     clearInterval(iv)
                 };
                 b.addEventListener('pointerdown', () => {
-                    setN(n + d);
+                    stepCount(d);
                     to = setTimeout(() => {
-                        iv = setInterval (() => setN(n + d), 80)
+                        iv = setInterval (() => setN(d), 80)
                     }, 400)
                 });
                 ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, stop))
