@@ -1982,7 +1982,7 @@
                 drawCleave();
             }).observe(board);
 
-            $('#pal').innerHTML = ['cell', 'nuc', 'cen', 'chr'].map(t => '<div class="prow"><b><i class="ic ic-' + t + '"></i>' + LBL[t] + '</b><div class="pbtn"><button class="btn" data-t="' + t + '" data-d="-1">\u2212</button><span id="pc-' + t + '">0</span><button class="btn" data-t="' + t + '" data-d="1">+</button></div></div>').join('') + '<p class="phint">Instruction and Definitions.</p>';
+            $('#pal').innerHTML = ['cell', 'nuc', 'cen', 'chr'].map(t => '<div class="prow"><b><i class="ic ic-' + t + '"></i>' + LBL[t] + '</b><div class="pbtn"><button class="btn" data-t="' + t + '" data-d="-1">\u2212</button><span id="pc-' + t + '">0</span><button class="btn" data-t="' + t + '" data-d="1">+</button></div></div>').join('') + '<p class="phint">Note: Once the workspace is playing some functions or features inside are not functional. Pause the workspace first then edit your cell.</p>';
             $('#pal').addEventListener('click', e => {
                 const b = e.target.closest('button');
                 if(b) setB(b.dataset.t, cnt(b.dataset.t) + +b.dataset.d)
@@ -2059,7 +2059,6 @@
             function renderMCQ(){
                 $('#phname').textContent = PH[phase].n + ' (build)';
                 $('#phname').style.color = PH[phase].c;
-                $('#phtxt').textContent = BD[phase] + ' The questions use what you built in this page.';
                 const box = $('#qs');
                 box.innerHTML = '';
                 let got = 0, tot = 0;
@@ -2097,7 +2096,7 @@
                 });
                 const done = tot > 0 && got === tot;
                 $('#fb').className = done ? 'done' : '';
-                $('#fbm').textContent = tot === 0 ? 'Build this phase to unlock some questions' : done ? 'Phase complete! 🥳' : got + ' of ' + tot + 'correct.';
+                $('#fbm').textContent = tot === 0 ? 'Have fun building cells.' : done ? 'Phase complete! 🥳' : got + ' of ' + tot + ' correct.';
                 $('#score').textContent = got + ' / ' + tot;
             }
 
