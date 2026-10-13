@@ -1345,7 +1345,7 @@
                         dy = Math.sin(j * 2.4) * R * 0.5;
                     }
                     Lp.push({t, x : c.x + dx, y : c.y + dy});
-                } else if(t === 'cen') Lp.push({t, x : c.x + sd * R * (ph === 4 ? 0.55 : 0.8), y : c.y + st});
+                } else if(t === 'cen') Lp.push({t, x : c.x + sd * R * (ph === 4 ? 0.52 : 0.6), y : c.y + st});
                 else {
                     const per = Math.max(1, Math.floor(R * 1.5 / 34)), col = Math.floor(j / per), row = j % per;
                     const sx = (col % 2 ? 1 : -1) * Math.ceil(col / 2) * 26, yy = c.y + (row - (per - 1) / 2) * 34;
