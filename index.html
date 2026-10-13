@@ -596,7 +596,7 @@
             animation:dash 0.8s linear infinite;
         }
         @keyframes dash{
-            to{stroke-dashoffset:-9;}
+            to{stroke-dashoffset:9;}
         }
         @keyframes wig{
             0%, 100% {transform:skewX(-7deg)} 50% {transform:skewX(7deg)}
@@ -1104,7 +1104,7 @@
                     ctx.strokeStyle = g('--fg');
                     ctx.lineWidth = 1.2;
                     ctx.setLineDash([5, 4]);
-                    ctx.lineDashOffset = -t * 22;
+                    ctx.lineDashOffset = t * 22;
                     S.ch.forEach((pr, i) => pr.forEach((c, k) => {
                         const [dx, dy] = drift(i, k), [ax, ay] = poles[k];
                         ctx.beginPath();
