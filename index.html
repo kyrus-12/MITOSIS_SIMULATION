@@ -41,7 +41,8 @@
             flex:0 0 auto;
         }
         .steps{
-            display:flex;
+            display:grid;
+            grid-template-columns:repeat(5, 1fr);
             gap:6px;
             padding:10px 10px 6px;
         }
@@ -82,6 +83,9 @@
             box-shadow:0 0 10px var(--c);
             transform:scale(1.4);
             display:none;
+        }
+        .step:nth-child(6){
+            grid-column:1/2;
         }
         main{
             height:clamp(300px, 46vh, 540px);
@@ -548,7 +552,8 @@
         .board.playing.p1 .el.nuc{
             animation:dissolve 2.4s ease-in-out infinite alternate;
         }
-        .board.playing.p4 .el.nuc{
+        .board.playing.p4 .el.nuc,
+        .board.playing.p5 .el.nuc{
             animation:form 2.4s ease-in-out infinite alternate;
         }
         @keyframes dissolve{
@@ -736,6 +741,7 @@
                 {n: 'Metaphase', c:'violet', t: 'Insert simple definition here or instruction.'},
                 {n: 'Anaphase', c:'violet', t: 'Insert simple definition here or instruction.'},
                 {n: 'Telophase', c:'violet', t: 'Insert simple definition here or instruction.'},
+                {n: 'Cytokinesis', c:'violet', t: 'Insert simple definition here or instruction.'},
             ];
 
             const THREAD_LEN = 0.35;
@@ -754,7 +760,7 @@
             });
 
             function setPhase(p){
-                phase = (p+5)%5;
+                phase = (p+6)%6;
                 [...stepsEl.children].forEach((b, i) => b.classList.toggle('on', i === phase));
                 showFormula();
                 renderQuiz();
@@ -795,6 +801,7 @@
                 [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
                 [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
                 [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
+                [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + '  chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
                 [mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + '  chromosomes.', 'Read the formula: 2n is the total number of chromosomes.')],
             ];
 
@@ -858,7 +865,7 @@
                 Q.forEach((qs, p) => qs.forEach((q, i) => { tot++; if ((ans[n+'|'+p+'|'+i] || {}).ok)all++}));
                 const done = here === Q[phase].length;
                 $('#fb').className = done ? 'done' : '';
-                $('#fbm').textContent = done ? (phase < 4 ? 'Phase complete! Try '+PH[phase + 1].n+' next. 🥹' : 'All phases done! Try another chromosome number. 🥳') : here+' of '+Q[phase].length+ ' correct. Answers are checked automatically.';
+                $('#fbm').textContent = done ? (phase < 5 ? 'Phase complete! Try '+PH[phase + 1].n+' next. 🥹' : 'All phases done! Try another chromosome number. 🥳') : here+' of '+Q[phase].length+ ' correct. Answers are checked automatically.';
                 $('#score').textContent = all + ' / '+tot;
             }
 
@@ -916,6 +923,8 @@
             }
 
             function target(ph){
+                const cyto = ph === 5;
+                if(cyto) ph = 4;
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
                 const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.45], [1.38 * u, 0.95 * u, 0.86]][ph];
                 const T = {
@@ -954,6 +963,7 @@
                     }
                     T.ch.push([A, B]);
                 }
+                if(cyto) T.p = 1;
                 return T;
             }
             const SK = ['a', 'b', 'p', 'pole', 'spin', 'n1', 'n2', 'nOff', 'nr', 'cOff'], CK = ['x', 'y', 'tx', 'bx', 'L', 'w', 'wave', 'ang'];
@@ -1044,7 +1054,7 @@
                 const cx = W /2, cy = H / 2, u = R, S = cur;
                 ctx.clearRect(0, 0, W, H);
 
-                const ca = 0;
+                const ca = Math.max(0, Math.min(1, (S.p - 0.88) / 0.1));
                 ctx.lineWidth = 3;
                 if(ca < 1){
                     ctx.globalAlpha = 1 - ca;
@@ -1274,7 +1284,7 @@
             }
 
             
-            const PB = [[], [], [], [], []], names = [], els = {}, CAP = 2000, CD = 360, LBL = {cell:'Cell membrane', nuc:'Nucleus', cen:'Centriole', chr:'Chromosome'};
+            const PB = [[], [], [], [], [], []], names = [], els = {}, CAP = 2000, CD = 360, LBL = {cell:'Cell membrane', nuc:'Nucleus', cen:'Centriole', chr:'Chromosome'};
             const board = $('#board'), world = $('#world'), cnt = t => PB[phase].filter(x => x.t === t && !x.side).length;
             const sided = ph => ph >= 3, FIBP = [2, 3];
             const rad = c => CD * (c.sc || 1) / 2;
@@ -1301,7 +1311,7 @@
             }
 
             function spawn(t){
-                const Lp = PB[phase], cs = Lp.filter(x => x.t === 'cell'), ph = phase;
+                const Lp = PB[phase], cs = Lp.filter(x => x.t === 'cell'), ph = phase === 5 ? 4 : phase;
                 if(t === 'cell'){
                     const k = cs.length, p = CD * 1.45;
                     Lp.push({t, x : CD * 0.72 + (k % 3) * p, y : CD * 0.72 + Math.floor(k / 3) * p});
@@ -1367,7 +1377,7 @@
                 }
             }
 
-            const BD = ['Interphase:', 'Prophase:', 'Metaphase:', 'Anaphase:', 'Telophase:'];
+            const BD = ['Interphase:', 'Prophase:', 'Metaphase:', 'Anaphase:', 'Telophase:', 'Cytokinesis:'];
             let selKey = null, bp = false, fl = false, wl = false;
             const dims = (it, e) => {
                 const ow = e.offsetWidth, oh = e.offsetHeight, a = (it.rot || 0) * Math.PI / 180, c = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a)), s = Math.max(0.3, it.sc || 1);
@@ -1464,7 +1474,7 @@
             const clamp01 = x => Math.max(0, Math.min(1, x)), ease = x => x * x * (3 - 2 * x), seg = (a, b, c) => ease(clamp01((a - b) / (c - b)));
 
             function cleaveOn(){
-                return build && (phase === 3 || phase === 4) && cnt('cell') > 0;
+                return build && phase >= 3 && cnt('cell') > 0;
             }
 
             function cleaveLoop(){
@@ -1522,7 +1532,8 @@
                 }
                 const tt = ((performance.now() - ct0) / 7000) % 1;
                 const qm = phase === 3 ? 0.4 :0.85;
-                const q = bp ? qm * seg(tt, 0.1, 0.65) * (1 - seg(tt, 0.94, 1)): qm, m = 0;
+                const q = bp ? qm * seg(tt, 0.1, 0.65) * (1 - seg(tt, 0.94, 1)): qm;
+                const m = phase !==5 ? 0 : bp ? seg(tt, 0.65, 0.85) * (1 - seg(tt, 0.88, 0.94)) : 1;
                 const st = 'style="fill:var(--cell); stroke:var(--cellline); stroke-width:4; stroke-linejoin:round;"';
                 let h = '';
                 const vw = view();
@@ -1665,7 +1676,7 @@
                     p('M12 12L28 48', a, 8) + p('M28, 12L12, 48', b, 8) + dot(20, 30),
                     sd ? p('M10 10L28 30L10 50', a, 7) + dot(28, 30) : p('M30, 10L12, 30L30, 50', b, 7) + dot(12, 30),
                     p(sd ? 'M20 4C30 14 10 20 20 30S30 46 20 56' : 'M20 4C10 14 30 20 20 30S10 46 20 56', a, 4) + dot(20, 30)
-                ][ph];
+                ][Math.min(ph, 4)];
             }
 
             function mkEl(t, k){
@@ -1723,7 +1734,7 @@
                 if(selKey && !els[selKey]) selKey = null;
                 $('#bcap').textContent = BD[phase];
                 board.classList.toggle('playing', bp);
-                [0, 1, 2, 3, 4].forEach(q => board.classList.toggle('p' + q, q === phase));
+                [0, 1, 2, 3, 4, 5].forEach(q => board.classList.toggle('p' + q, q === phase));
                 board.classList.toggle('cl', cleaveOn());
                 fit();
                 setDirs();
@@ -1927,6 +1938,7 @@
             const qD = (q, f, need, ok, h) => ({q, f, need, ok, h});
             const qS = (q, o, ok, h) => ({q, o, ok, h});
             const MQ = [
+                [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
                 [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
                 [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
                 [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
