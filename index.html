@@ -926,7 +926,7 @@
                 const cyto = ph === 5;
                 if(cyto) ph = 4;
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
-                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.15 * u, u, 0.2], [1.55 * u, 0.72 * u, 0.52]][ph];
+                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.15 * u, u, 0.2], [[1.4 * u, 0.62 * u, 0.52]]][ph];
                 const T = {
                     a:cell[0], b:cell[1], p:cell[2], v:ph >= 3 ? 1 : 0, pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0, 1, 1, 0][ph],
                     n1:[1, 0.15, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
@@ -970,6 +970,18 @@
 
             function cellPath(cx, cy, a, b, p, v = 0){
                 ctx.beginPath();
+                const sp = Math.max(0, Math.min(1, (p - 0.985) / 0.014));   // 0 = joined, 1 = two separate cells
+                if(sp > 0){
+                    const rl = a / 2 * (1 - 0.12 * sp);
+                    [-1, 1].forEach(sg => {
+                        for(let i = 0; i <= 90; i++){
+                            const th = i / 90 * Math.PI * 2, x = cx + sg * a / 2 + rl * Math.cos(th), y = cy + b * Math.sin(th);
+                            i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+                        }
+                        ctx.closePath();
+                    });
+                    return;
+                }
                 const k = Math.sqrt(Math.max(0, 1 - Math.pow(1 - p, 2))), rx = a / (1 + k), dd = k * rx, beta = Math.acos(-k);
                 for(let i = 0; i <= 180; i++){
                     const th = i / 180 * Math.PI * 2, s = Math.sin(th), c = Math.cos(th);
@@ -1059,7 +1071,7 @@
                 const cx = W /2, cy = H / 2, u = R, S = cur;
                 ctx.clearRect(0, 0, W, H);
 
-                const ca = Math.max(0, Math.min(1, (S.p - 0.88) / 0.1));
+                const ca = 0;
                 ctx.lineWidth = 3;
                 if(ca < 1){
                     ctx.globalAlpha = 1 - ca;
