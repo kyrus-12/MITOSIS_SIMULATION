@@ -1819,7 +1819,7 @@
                     }
                 });
                 if(selKey && !els[selKey]) selKey = null;
-                $('#bcap').textContent = BD[phase];
+                $('#bcap').textContent = '';
                 board.classList.toggle('playing', bp);
                 [0, 1, 2, 3, 4, 5].forEach(q => board.classList.toggle('p' + q, q === phase));
                 board.classList.toggle('cl', cleaveOn());
@@ -2066,6 +2066,7 @@
             function renderMCQ(){
                 $('#phname').textContent = PH[phase].n + ' (build)';
                 $('#phname').style.color = PH[phase].c;
+                $('#phtxt').textContent = '';
                 const box = $('#qs');
                 box.innerHTML = '';
                 let got = 0, tot = 0;
