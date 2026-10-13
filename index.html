@@ -671,6 +671,30 @@
             font-weight:600;
             line-height:1.3;
         }
+        #retry{
+            display:block;
+            width:100%;
+            margin-top:10px;
+            padding:10px 12px;
+            border:1px solid var(--line);
+            border-radius:12px;
+            background:#fff;
+            color:#000;
+            font:inherit;
+            font-size:14px;
+            font-weight:600;
+            cursor:pointer;
+        }
+        #retry:active{ 
+            transform:scale(0.98); 
+        }
+        .opt:disabled{ 
+            cursor:default;
+        }
+        input:disabled{
+            opacity:1;
+            cursor:default;
+        }
     </style>
     </head>
     <body>
@@ -722,6 +746,7 @@
                                 <p id="phtxt"></p>
                                 <div id="qs"></div>
                                 <div id="fb"><span id="fbm"></span><b id="score"></b></div>
+                                <button id="retry" type="button">Try again</button>
                             </aside>
                         </div>
         
@@ -851,6 +876,7 @@
                     
                     const inp = d.querySelector('input'), st = ans[qk(i)];
                     if(st)inp.value = st.v;
+                    if(st && st.ok !== null && st.ok !== undefined) inp.disabled = true;
                     inp.addEventListener('input', () => {
                         inp.value = inp.value.replace(/\D/g, '');
                         grade(i, d, inp, false)
@@ -870,11 +896,14 @@
             }
 
             function grade(i, d, inp, force){
+                const old = ans[qk(i)];
+                if(old && old.ok !== null && old.ok !== undefined) return;
                 const a = String(Q[phase][i].a(n)), v = inp.value;
                 let ok = null;
                 if(v === a)ok = true;
                 else if(v !== '' && (force || v.length >= a.length)) ok = false;
                 ans[qk(i)] = {v, ok};
+                if(ok !== null) inp.disabled = true;
                 paint(i, d);
                 summary();
             }
@@ -900,6 +929,16 @@
 
 
             $('#cnt').addEventListener('change', e => setN(e.target.value));
+
+            $('#retry').addEventListener('click', () => {
+                if(build){
+                    Object.keys(mans).forEach(k => { if(k.split('|')[0] === String(phase)) delete mans[k]; });
+                    renderMCQ();
+                } else {
+                    Q[phase].forEach((q, i) => delete ans[qk(i)]);
+                    renderQuiz();
+                }
+            });
 
             function hold(id, d){
                 const b = $(id);
@@ -2041,10 +2080,12 @@
                             const b = document.createElement('button');
                             b.className = 'opt' + (t === pick ? ' pick' : '');
                             b.textContent = t;
+                            if(pick !== undefined) b.disabled = true;
                             b.onclick = () => {
+                                if(mans[key] !== undefined) return;
                                 mans[key] = t;
                                 renderMCQ();
-                            };
+                            };     
                             d.querySelector('.opts').appendChild(b)
                         });
                         if(opts.includes(pick)){
