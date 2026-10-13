@@ -809,12 +809,10 @@
                     mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = ' + N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many chromosomes line up along the middle of the cell?', N => N, N => 'Yes! All ' + N + ' chromosomes line up at the center.', 'Every chromosome lines up at the center, so the answer equals the 2n number.'),
                     mq('How many sister chromatids line up along the middle of the cell?', N => N * 2, N => 'Yes! ' + N + ' x 2 = ' + (N * 2) + ' sister chromatids.', 'Each chromosome has 2 sister chromatids. Multiply the 2n number by 2.'),
-                    mq('How many kinetochores does each chromosome have?', N => 2, N => 'Yes! Each chromosome has 2 kinetochores, one on each sister chromatid.', 'Each sister chromatid has its own kinetochore, and each chromosome has 2 sister chromatids.'),
-                    mq('How many kinetochores are in the whole cell?', N => N * 2, N => 'Yes! ' + N + ' x 2 = ' + (N * 2) + ' kinetochores.', 'Each chromosome has 2 kinetochores. Multiply the 2n number by 2.'),
-                    mq('How many poles does the spindle have?', N => 2, N => 'Yes! The spindle has 2 poles, one on each side of the cell.', 'Spindle fibers pull toward opposite sides of the cell, so there are 2 poles.')
+                    mq('How many poles does the spindle have?', N => 2, N => 'Yes! The spindle has 2 poles, one on each side of the cell.', 'Spindle fibers pull toward opposite sides of the cell, so there are 2 poles.'),
+                    mq('How many chromosomes are in the cell right BEFORE Anaphase begins?', N => N, N => 'Yes! There are still ' + N + ' chromosomes, each with 2 sister chromatids.', 'Before the sister chromatids separate, the count is still the 2n number.'),
                 ],
                 [
-                    mq('How many chromosomes are in the cell right BEFORE Anaphase begins?', N => N, N => 'Yes! There are still ' + N + ' chromosomes, each with 2 sister chromatids.', 'Before the sister chromatids separate, the count is still the 2n number.'),
                     mq('How many chromosomes are in the whole cell AFTER the sister chromatids separate?', N => N * 2, N => 'Yes! ' + N + ' x 2 = ' + (N * 2) + ' chromosomes.', 'Each sister chromatid is now its own chromosome, so the number doubles. Multiply the 2n number by 2.'),
                     mq('How many chromosomes are pulled toward EACH pole?', N => N, N => 'Yes! Each pole receives ' + N + ' chromosomes.', 'The chromosomes split evenly between 2 poles. Each pole gets one copy of every chromosome, which equals the 2n number.'),
                     mq('How many centromeres split in the cell?', N => N, N => 'Yes! Each of the ' + N + ' chromosomes has 1 centromere that splits.', 'Each chromosome has 1 centromere, and every one of them splits, so the answer equals the 2n number.'),
@@ -833,8 +831,6 @@
                     mq('How many daughter cells are made?', N => 2, N => 'Yes! Mitosis makes 2 daughter cells.', 'The parent cell splits in half, so 2 daughter cells are made.'),
                     mq('How many chromosomes does EACH daughter cell have?', N => N, N => 'Yes! Each daughter cell has ' + N + ' chromosomes, the same as the parent cell.', 'Mitosis makes identical cells, so each daughter cell has the same number as the parent, which equals the 2n number.'),
                     mq('How many chromosomes are in BOTH daughter cells combined?', N => N * 2, N => 'Yes! ' + N + ' + ' + N + ' = ' + (N * 2) + ' chromosomes.', 'Add the chromosomes in the 2 daughter cells together. Multiply the 2n number by 2.'),
-                    mq('If BOTH daughter cells divide again by mitosis, how many cells will there be?', N => 4, N => 'Yes! 2 cells each make 2 new cells, so 2 x 2 = 4 cells.', 'Each of the 2 cells splits into 2 cells, so 2 x 2 = 4.'),
-                    mq('How many chromosomes are in all 4 cells combined after the second division?', N => N * 4, N => 'Yes! ' + N + ' x 4 = ' + (N * 4) + ' chromosomes.', 'Each of the 4 cells has the 2n number of chromosomes. Multiply the 2n number by 4.')
                 ],
             ];
 
