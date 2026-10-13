@@ -926,9 +926,9 @@
                 const cyto = ph === 5;
                 if(cyto) ph = 4;
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
-                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.28 * u, 0.96 * u, 0.45], [1.38 * u, 0.95 * u, 0.86]][ph];
+                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.15 * u, u, 0.2], [1.38 * u, 0.95 * u, 0.86]][ph];
                 const T = {
-                    a:cell[0], b:cell[1], p:cell[2], pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0, 1, 1, 0][ph],
+                    a:cell[0], b:cell[1], p:cell[2], v:ph === 3 ? 1 : 0, pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0, 1, 1, 0][ph],
                     n1:[1, 0.15, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
                 };
                 const minW = Math.max(2.2, 5 * sc);
@@ -966,12 +966,15 @@
                 if(cyto) T.p = 1;
                 return T;
             }
-            const SK = ['a', 'b', 'p', 'pole', 'spin', 'n1', 'n2', 'nOff', 'nr', 'cOff'], CK = ['x', 'y', 'tx', 'bx', 'L', 'w', 'wave', 'ang'];
+            const SK = ['a', 'b', 'p', 'pole', 'spin', 'n1', 'n2', 'nOff', 'nr', 'cOff', 'v'], CK = ['x', 'y', 'tx', 'bx', 'L', 'w', 'wave', 'ang'];
 
-            function cellPath(cx, cy, a, b, p){
+            function cellPath(cx, cy, a, b, p, v = 0){
                 ctx.beginPath();
-                for(let i = 0; i <= 90; i++){
-                    const th = i / 90 * Math.PI * 2, s = Math.sin(th), y = b* s * (1 - p* Math.pow(Math.abs(s), 8)), x = a * Math.cos(th);
+                for(let i = 0; i <= 180; i++){
+                    const th = i / 180 * Math.PI * 2, s = Math.sin(th), c = Math.cos(th);
+                    const old = p * Math.pow(Math.abs(s), 8);
+                    const vee = p * Math.max(0, 1 - Math.abs(c) / 0.4);
+                    const y = b * s * (1 - old * (1 - v) - vee * v), x = a * c;
                     i ? ctx.lineTo(cx + x, cy + y) : ctx.moveTo(cx + x, cy + y);
                 }
                 ctx.closePath();
@@ -1058,7 +1061,7 @@
                 ctx.lineWidth = 3;
                 if(ca < 1){
                     ctx.globalAlpha = 1 - ca;
-                    cellPath(cx, cy, S.a, S.b, S.p);
+                    cellPath(cx, cy, S.a, S.b, S.p, S.v);
                     ctx.fillStyle = g('--cell');
                     ctx.fill();
                     ctx.strokeStyle = g('--cellline');
@@ -1487,10 +1490,10 @@
                 }
             }
 
-            function cleavePath(cx, cy, ra, rb, q, m, ax, st, circ){
+            function cleavePath(cx, cy, ra, rb, q, m, ax, st, circ, vee){
                 const lim = 1e9;
                 const a = Math.max(4, Math.min(ra * (1 + 0.3 * q), lim)), b = rb * (1 - 0.1 * q), mp = (u, v, sg) => ax === 'x' ? [cx + sg * u, cy + v] : [cx + v, cy + sg * u];
-                const f = u => 1 - q * Math.exp(- Math.pow(u / (0.3 * a), 2));
+                const f = u => vee ? 1 - q * Math.max(0, 1 - Math.abs(u) / (0.4 * a)) : 1 - q * Math.exp(- Math.pow(u / (0.3 * a), 2));
                 if(n <= 0 || m < 0.002){
                     let d = '';
                     for(let i = 0; i < 220; i++){
@@ -1531,7 +1534,7 @@
                     requestAnimationFrame(cleaveLoop);
                 }
                 const tt = ((performance.now() - ct0) / 7000) % 1;
-                const qm = phase === 3 ? 0.4 :0.85;
+                const qm = phase === 3 ? 0.2 : 0.85;
                 const q = bp ? qm * seg(tt, 0.1, 0.65) * (1 - seg(tt, 0.94, 1)): qm;
                 const m = phase !==5 ? 0 : bp ? seg(tt, 0.65, 0.85) * (1 - seg(tt, 0.88, 0.94)) : 1;
                 const st = 'style="fill:var(--cell); stroke:var(--cellline); stroke-width:4; stroke-linejoin:round;"';
@@ -1540,7 +1543,7 @@
                 cells.forEach(e => {
                     const v = e.vis, cx = v.cx, cy = v.cy, rr = Math.max(v.w, v.h) * 0.75;
                     if(cx + rr < vw.x0 || cx - rr > vw.x1 || cy + rr < vw.y0 || cy - rr > vw.y1) return;
-                    h += cleavePath(cx, cy, v.w / 2 - 2, v.h / 2 - 2, q, m, 'x', st, true);
+                    h += cleavePath(cx, cy, v.w / 2 - 2, v.h / 2 - 2, q, m, 'x', st, true, phase === 3);
                 });
                 c.innerHTML = h;
             }
