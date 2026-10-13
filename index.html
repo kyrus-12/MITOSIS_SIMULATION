@@ -541,17 +541,6 @@
         @keyframes glow{
             from{ box-shadow:0 0 4px #fbbf24;} to {box-shadow:0 0 16px 4px #fbbf24}
         }
-        .board.playing .el.nuc::after{
-            content:'';
-            position:absolute;
-            inset:-4px;
-            border:2px dashed var(--nuc);
-            border-radius:50%;
-            animation:ring 1.8s ease-out infinite;
-        }
-        @keyframes ring{
-            from{transform:scale(1); opacity:0.8} to {transform:scale(1.25); opacity:0}
-        }
         .board.playing.p1 .el.nuc{
             animation:dissolve 2.4s ease-in-out infinite alternate;
         }
