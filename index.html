@@ -926,9 +926,9 @@
                 const cyto = ph === 5;
                 if(cyto) ph = 4;
                 const cx = W/2, cy = H/2, u = R, sc = scl(), uu = u * sc;
-                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.15 * u, u, 0.2], [1.38 * u, 0.95 * u, 0.86]][ph];
+                const cell = [[u, u, 0], [u, u, 0], [u, u, 0], [1.15 * u, u, 0.2], [1.55 * u, 0.72 * u, 0.52]][ph];
                 const T = {
-                    a:cell[0], b:cell[1], p:cell[2], v:ph === 3 ? 1 : 0, pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0, 1, 1, 0][ph],
+                    a:cell[0], b:cell[1], p:cell[2], v:ph >= 3 ? 1 : 0, pole:[0.07, 0.8, 0.9, 0.9, 0.9][ph], spin:[0, 0, 1, 1, 0][ph],
                     n1:[1, 0.15, 0, 0, 1][ph], n2:ph === 4 ? 1 : 0, nOff:ph === 4 ? 0.76 * u : 0, cOff:ph === 4 ? 0.76 * u : 0.62 * u, nr:ph === 4 ? 0.38 * u : 0.64 * u, ch:[]
                 };
                 const minW = Math.max(2.2, 5 * sc);
@@ -970,7 +970,7 @@
 
             function cellPath(cx, cy, a, b, p, v = 0){
                 ctx.beginPath();
-                const k = Math.sqrt(Math.max(0, 1 - Math.pow(1 - p, 2))), rx = a / (1 + k), dd = k * rx, beta = Math.acos(-kk);
+                const k = Math.sqrt(Math.max(0, 1 - Math.pow(1 - p, 2))), rx = a / (1 + k), dd = k * rx, beta = Math.acos(-k);
                 for(let i = 0; i <= 180; i++){
                     const th = i / 180 * Math.PI * 2, s = Math.sin(th), c = Math.cos(th);
                     const xo = a * c, yo = b * s * (1 -p * Math.pow(Math.abs(s), 8));
@@ -1506,7 +1506,7 @@
                             const psi = Math.atan2(Math.sin(th), Math.abs(Math.cos(th))) * beta / (Math.PI / 2);
                             u = (Math.cos(th) < 0 ? -1 : 1) * (dd + rx * Math.cos(psi)); v = b * Math.sin(psi);
                         } 
-                        [x, y] = mp(u, v, 1);
+                        const [x, y] = mp(u, v, 1);
                         d += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
                     }
                      return '<path d="' + d + 'Z" ' + st + '/>';
@@ -1543,7 +1543,7 @@
                     requestAnimationFrame(cleaveLoop);
                 }
                 const tt = ((performance.now() - ct0) / 7000) % 1;
-                const qm = phase === 3 ? 0.2 : 0.85;
+                const qm = phase === 3 ? 0.2 : phase === 4 ? 0.52 : 0.85;
                 const q = bp ? qm * seg(tt, 0.1, 0.65) * (1 - seg(tt, 0.94, 1)): qm;
                 const m = phase !==5 ? 0 : bp ? seg(tt, 0.65, 0.85) * (1 - seg(tt, 0.88, 0.94)) : 1;
                 const st = 'style="fill:var(--cell); stroke:var(--cellline); stroke-width:4; stroke-linejoin:round;"';
@@ -1552,7 +1552,7 @@
                 cells.forEach(e => {
                     const v = e.vis, cx = v.cx, cy = v.cy, rr = Math.max(v.w, v.h) * 0.75;
                     if(cx + rr < vw.x0 || cx - rr > vw.x1 || cy + rr < vw.y0 || cy - rr > vw.y1) return;
-                    h += cleavePath(cx, cy, v.w / 2 - 2, v.h / 2 - 2, q, m, 'x', st, true, phase === 3);
+                    h += cleavePath(cx, cy, v.w / 2 - 2, v.h / 2 - 2, q, m, 'x', st, true, phase === 3 || phase === 4);
                 });
                 c.innerHTML = h;
             }
