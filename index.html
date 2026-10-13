@@ -790,7 +790,6 @@
             const mq = (q, a, ok, h) => ({q, a, ok, h});
             const Q = [
                 [
-                    mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = ' + N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many DNA molecules are in the cell BEFORE the DNA is copied?', N => N, N => 'Yes! Each of the ' + N + ' chromosomes is one DNA molecule before copying.', 'Before DNA replication, each chromosome is a single DNA molecule, so the answer equals the 2n number.'),
                     mq('How many DNA molecules are in the cell AFTER the DNA is copied?', N => N * 2, N => 'Yes! ' + N + ' x 2 = ' + (N * 2) + ' DNA molecules.', 'Every DNA molecule is copied, so the number doubles. Multiply the 2n number by 2.'),
@@ -799,7 +798,6 @@
                     mq('How many centromeres are in the cell after the DNA is copied?', N => N, N => 'Yes! Copying does not add chromosomes, so there are still ' + N + ' centromeres.', 'There is one centromere per chromosome, and copying DNA does not change the chromosome count.')
                 ],
                 [
-                    mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = ' + N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many sister chromatids are in the cell?', N => N * 2, N => 'Yes! ' + N + ' x 2 = ' + (N * 2) + ' sister chromatids.', 'Each chromosome has 2 sister chromatids. Multiply the 2n number by 2.'),
                     mq('How many X-shaped chromosomes can you count in the cell?', N => N, N => 'Yes! Each X is one chromosome, so there are ' + N + '.', 'Each X-shaped structure is one chromosome made of 2 sister chromatids, so the answer equals the 2n number.'),
@@ -808,7 +806,6 @@
                     mq('How many nuclear envelopes does the cell have at the very start of Prophase?', N => 1, N => 'Yes! There is 1 nuclear envelope, and it breaks down as Prophase continues.', 'The cell has just 1 nucleus, so it has 1 nuclear envelope.')
                 ],
                 [
-                    mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = ' + N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many chromosomes line up along the middle of the cell?', N => N, N => 'Yes! All ' + N + ' chromosomes line up at the center.', 'Every chromosome lines up at the center, so the answer equals the 2n number.'),
                     mq('How many sister chromatids line up along the middle of the cell?', N => N * 2, N => 'Yes! ' + N + ' x 2 = ' + (N * 2) + ' sister chromatids.', 'Each chromosome has 2 sister chromatids. Multiply the 2n number by 2.'),
@@ -817,8 +814,6 @@
                     mq('How many poles does the spindle have?', N => 2, N => 'Yes! The spindle has 2 poles, one on each side of the cell.', 'Spindle fibers pull toward opposite sides of the cell, so there are 2 poles.')
                 ],
                 [
-                    mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
-                    mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = ' + N + ' means ' + N + ' chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many chromosomes are in the cell right BEFORE Anaphase begins?', N => N, N => 'Yes! There are still ' + N + ' chromosomes, each with 2 sister chromatids.', 'Before the sister chromatids separate, the count is still the 2n number.'),
                     mq('How many chromosomes are in the whole cell AFTER the sister chromatids separate?', N => N * 2, N => 'Yes! ' + N + ' x 2 = ' + (N * 2) + ' chromosomes.', 'Each sister chromatid is now its own chromosome, so the number doubles. Multiply the 2n number by 2.'),
                     mq('How many chromosomes are pulled toward EACH pole?', N => N, N => 'Yes! Each pole receives ' + N + ' chromosomes.', 'The chromosomes split evenly between 2 poles. Each pole gets one copy of every chromosome, which equals the 2n number.'),
@@ -834,7 +829,6 @@
                     mq('How many MORE chromosomes does each new nucleus have than the original cell?', N => 0, N => 'Yes! 0 more, because each new nucleus has ' + N + ' chromosomes, the same as the original cell.', 'Each new nucleus has the same number as the original cell, so the difference is 0.')
                 ],
                 [
-                    mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = '+ N + ' means ' + N + '  chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many chromosomes are in the cell?', N => N, N => 'Yes! 2n = ' + N + ' means ' + N + '  chromosomes.', 'Read the formula: 2n is the total number of chromosomes.'),
                     mq('How many daughter cells are made?', N => 2, N => 'Yes! Mitosis makes 2 daughter cells.', 'The parent cell splits in half, so 2 daughter cells are made.'),
                     mq('How many chromosomes does EACH daughter cell have?', N => N, N => 'Yes! Each daughter cell has ' + N + ' chromosomes, the same as the parent cell.', 'Mitosis makes identical cells, so each daughter cell has the same number as the parent, which equals the 2n number.'),
