@@ -970,11 +970,13 @@
 
             function cellPath(cx, cy, a, b, p, v = 0){
                 ctx.beginPath();
+                const k = Math.sqrt(Math.max(0, 1 - Math.pow(1 - p, 2))), rx = a / (1 + k), dd = k * rx, beta = Math.acos(-kk);
                 for(let i = 0; i <= 180; i++){
                     const th = i / 180 * Math.PI * 2, s = Math.sin(th), c = Math.cos(th);
-                    const old = p * Math.pow(Math.abs(s), 8);
-                    const vee = p * Math.max(0, 1 - Math.abs(c) / 0.4);
-                    const y = b * s * (1 - old * (1 - v) - vee * v), x = a * c;
+                    const xo = a * c, yo = b * s * (1 -p * Math.pow(Math.abs(s), 8));
+                    const psi = Math.atan2(s, Math.abs(c)) * beta / (Math.PI / 2);
+                    const xn = (c < 0 ? -1 : 1) * (dd + rx * Math.cos(psi)), yn = b * Math.sin(psi);
+                    const x = xo + (xn - xo) * v, y = yo + (yn - yo) * v;
                     i ? ctx.lineTo(cx + x, cy + y) : ctx.moveTo(cx + x, cy + y);
                 }
                 ctx.closePath();
@@ -988,7 +990,7 @@
             }
 
             function chromatid(c, i, k, hl, dim){
-                const col = 'hsl(' + hue(i) + ' ' + (k ? 85 : 80 ) + '% ' +(k ? 74 : 62) + '%)', [dx, dy] = drift(i, k);
+                const col = 'hsl(' + hue(i) + ' ' + (k ? 85 : 80 ) + '% ' +(k ? 74 : 62) + '%)', [dx, dy] = drift(i, 0);
                 ctx.save(); 
                 const fa = (dim ? 0.55 : 1) * (1 - thr);
                 if(fa < 0.02){
@@ -1496,8 +1498,15 @@
                 const f = u => vee ? 1 - q * Math.max(0, 1 - Math.abs(u) / (0.4 * a)) : 1 - q * Math.exp(- Math.pow(u / (0.3 * a), 2));
                 if(n <= 0 || m < 0.002){
                     let d = '';
+                    const kk =  Math.sqrt(Math.max(0, 1 - Math.pow(1 - q, 2))), rx = a / (1 + kk), dd = kk * rx, beta = Math.acos(-kk);
                     for(let i = 0; i < 220; i++){
-                        const  th = i / 220 * Math.PI * 2, u = a * Math.cos(th), v = b * Math.sin(th) * f(u), [x, y] = mp(u, v, 1);
+                        const  th = i / 220 * Math.PI * 2; 
+                        let u = a * Math.cos(th), v = b * Math.sin(th) * f(u);
+                        if(vee){
+                            const psi = Math.atan2(Math.sin(th), Math.abs(Math.cos(th))) * beta / (Math.PI / 2);
+                            u = (Math.cos(th) < 0 ? -1 : 1) * (dd + rx * Math.cos(psi)); v = b * Math.sin(psi);
+                        } 
+                        [x, y] = mp(u, v, 1);
                         d += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
                     }
                      return '<path d="' + d + 'Z" ' + st + '/>';
