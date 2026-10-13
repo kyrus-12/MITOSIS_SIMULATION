@@ -1950,7 +1950,12 @@
             const qD = (q, f, need, ok, h) => ({q, f, need, ok, h});
             const qS = (q, o, ok, h) => ({q, o, ok, h});
             const MQ = [
-                [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
+                [
+                    qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.'),
+                    qS('First, add a chromosome to the workspace. Next, add a nucleus and arrange it properly. Finally, click the Play button below and observe the chromosomes. Describe how they look inside the nucleus during Interphase.', ['Uncoiled and relaxed (like thin strings/chromatin).', 'Tightly packed into neat "X" shapes, and scattered.', 'Lined up perfectly down the middle of the cell.', 'Pulled apart to opposite ends of the cell.'], 'Correct! Chromosomes during Interphase are loose and thread-like rather than condensed.', ''),
+                    qS('What does a cell mainly do during Interphase?', ['It grows, and copies its DNA.', 'It splits into two identical cells.', 'Stretched then pulled apart to opposite ends of the cell.', 'It aligns all chromosomes in the middle.'], 'Correct! Interphase is the growth and preparation phase of the cell cycle.', ''),
+                    qS('Which stage comes immediately AFTER Interphase in the cell cycle?', ['Prophase', 'Anaphase', 'Prophase II', 'Metaphase'], 'Correct! Prophase is the next stage after Interphase, where chromosomes start to form.', ''),
+                ],
                 [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
                 [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
                 [qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.')],
