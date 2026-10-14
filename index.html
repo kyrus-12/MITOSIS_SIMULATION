@@ -2022,11 +2022,15 @@
                 return [v, ...c.slice(0, 3)].sort((a, b) => a - b).map(String)
             };
 
+            const ANO = 'The malaria-carrying mosquito, Anopheles gambiae, is a vital organism in genetic research. Unlike humans, who have 46 chromosomes, this mosquito has a diploid chromosome number of 2n = 6. This makes it the perfect organism for tracking individual chromosomes during cell division. Add the required number of cell membranes, centrioles, chromosomes, and nuclei ideal for the cell of Anopheles gambiae. Then, arrange the elements in their proper positions for the selected phase.';
             const qD = (q, f, need, ok, h) => ({q, f, need, ok, h});
             const qS = (q, o, ok, h) => ({q, o, ok, h});
             const MQ = [
                 [
-                    qD('How many chromosomes are in this phase?', chrN, 'chromosomes', v => 'Yes! you built ' + v + 'chromosomes, so 2n = ' + v + '.', 'Count the chromosomeson your work.'),
+                    qD(ANO + '<br><br><b>How many chromosomes are in the cell of Anopheles gambiae?</b>', chrN, 'chromosomes', v => 'Yes! You built ' + v + ' chromosomes, so 2n = ' + v + '.', 'Count the chromosomes on your work. Remember 2n = 6.'),
+                    qD('How many centrioles are in the cell of Anopheles gambiae?', () => bc('cen'), 'centrioles', v => 'Yes! You built ' + v + ' centrioles, one at each pole.', 'Count the centrioles on your work.'),
+                    qD('How many nuclei are in the cell of Anopheles gambiae?', () => bc('nuc'), 'nuclei', v => 'Yes! You built ' + v + (v > 1 ? ' nuclei.' : ' nucleus.'), 'Count the nuclei on your work.'),
+                    qD('How many cell membranes are in the cell of Anopheles gambiae?', () => bc('cell'), 'cell membrane', v => 'Yes! You built ' + v + ' cell membrane enclosing the cell.', 'Count the cell membrane on your work.'),
                     qS('Add one cell membrane, one chromosome, two centrioles, and one nucleus to the workspace. Arrange it properly and click the Play button below. Describe how chromosomes look like inside the nucleus during Interphase.', ['Uncoiled and relaxed (like thin strings/chromatin).', 'Tightly packed into neat "X" shapes, and scattered.', 'Lined up perfectly down the middle of the cell.', 'Pulled apart to opposite ends of the cell.'], 'Correct! Chromosomes during Interphase are loose and thread-like rather than condensed.', 'Chromosomes during Interphase are loose and thread-like rather than condensed.'),
                     qS('What does a cell mainly do during Interphase?', ['It grows, and copies its DNA.', 'It splits into two identical cells.', 'Stretched then pulled apart to opposite ends of the cell.', 'It aligns all chromosomes in the middle.'], 'Correct! Interphase is the growth and preparation phase of the cell cycle.', 'Interphase is the growth and preparation phase of the cell cycle.'),
                     qS('Which stage comes immediately AFTER Interphase in the cell cycle?', ['Prophase', 'Anaphase', 'Prophase II', 'Metaphase'], 'Correct! Prophase is the next stage after Interphase, where chromosomes start to form.', 'Prophase is the next stage after Interphase, where chromosomes start to form.'),
