@@ -1319,9 +1319,12 @@
             function threadPts(c, i){
                 const u = R, [dx, dy] = drift(i, 0), k = 0.35 + 0.65 * thr, TP = 6.2832;
                 const f1 = 2.3 + 0.4 * ((i * 7) % 3), f2 = 5.4 + 0.4 * ((i * 5) % 4), f3 = 9.2 + 0.5 * ((i * 3) % 5);
-                const g1 = 3.3 + 0.4 * ((i * 5) % 3), g2 = 6.4 + 0.4 * ((i * 3) % 4), g3 = 10.2 + 0.5 * ((i * 7) % 4);
-                const A1 = 0.19 * u * k, A2 = 0.11 * u * k, A3 = 0.03 * u *k;
-                const ox = c.x + dx, oy = c.y + dy, NN = 90, q0 = (i * 0.137) % 1;
+                const g1 = 3.3 + 0.4 * ((i * 5) % 3), g2 = 6.4 + 0.4 * ((i * 3) % 4), g3 = 10.2 + 0.5 * ((i * 7) % 4);              
+                const am = lerp(1, Math.min(1, 2.4 / Math.sqrt(n)), Math.max(0, Math.min(1, (1 - ns) / 0.41)));
+                const A1 = 0.19 * u * k * ns * am, A2 = 0.11 * u * k * ns * am, A3 = 0.03 * u *k * ns * am;
+                const w = Math.max(0, Math.min(1, (1 - ns) / 0.41)), sr = (cur ? cur.nr : 0) * 0.42, sa = i* 2.39996, sq = Math.sqrt((i + 0.5) / n);
+                const bx = ncx + (c.x - ncx) * ns, by = ncy + (c.y - ncy) * ns;
+                const ox = lerp(bx, ncx + Math.cos(sa) * sr * sq, w) + dx, oy = lerp(by, ncy + Math.sin(sa) * sr * sq, w) + dy, NN = 90, q0 = (i * 0.137) % 1;
                 const pts = [];
                 for(let s = 0; s <= NN; s++){
                     const q = q0 + THREAD_LEN * s / NN;
@@ -1418,16 +1421,16 @@
                     }
                     Lp.push({t, x : c.x + dx, y : c.y + dy});
                 } else if(t === 'cen') Lp.push({t, x : c.x + sd * R * (ph === 4 ? 0.55 : 0.8), y : c.y + st});
-                else {
-                    const per = Math.max(1, Math.floor(R * 1.5 / 34)), col = Math.floor(j / per), row = j % per;
-                    const sx = (col % 2 ? 1 : -1) * Math.ceil(col / 2) * 26, yy = c.y + (row - (per - 1) / 2) * 34;
+                else {                    
+                    const TH = phase === 5, stp = TH ? 50 : 34, cw = TH ? 50 : 26, per = Math.max(1, Math.floor( R * 1.5 / stp)), col = Math.floor(j / per), row = j % per;
+                    const sx = (col % 2 ? 1 : -1) * Math.ceil(col / 2) * cw, yy = c.y + (row - (per - 1) / 2) * stp;
                     if(ph <= 1){
                         const [a, b] = sp(j, 0.6);
                         Lp.push({t, x : c.x + a, y : c.y + b});
                     } else if(ph === 2) Lp.push({t, x : c.x + sx, y : yy});
                     else {
                         const off = (ph === 3 ? 0.42 : 0.55) * R;
-                        Lp.push({t, side : 0, x : c.x - off + sx, y : yy}, {t, side : 1, x : c.x + off + sx, y : yy})
+                        Lp.push({t, side : 0, x : c.x - off + sx, y : yy, ...(TH ? {sc : 0.6} : {})}, {t, side : 1, x : c.x + off + sx, y : yy, ...(TH ? {sc : 0.6} : {})})
                     }
                 }
             }
