@@ -1224,9 +1224,10 @@
                         thread(S.ch[i][0], i, i === sel, sel >= 0 && i !== sel);
                         if(S.n2 > 0.02) thread(S.ch[i][1], i, i === sel, sel >= 0 && i !== sel, 1, S.n2);
                     }
+                    S.ch[i].forEach((c, k) => chromatid(c, i, k, i === sel, sel >= 0 && i !== sel))
                 });
                 const pr = sel >= 0 ? S.ch[sel] : null, sep = pr && Math.hypot(pr[0].x - pr[1].x, pr[0].y - pr[1].y) > 0.3 * u;
-                if(pr)(sep ? pr : [pr[0]]).forEach(c0, ci => {
+                if(pr)(sep ? pr : [pr[0]]).forEach((c0, ci) => {
                     let c = c0;
                     const [dx, dy] = drift(sel, 0);
                     let r = Math.max(0.22 * u * scl(), 14) + Math.sin(t * 4) * 3;
@@ -1252,7 +1253,7 @@
                 const dt = Math.min(0.05, (now- last) / 1000); last = now; t += dt;
                 if(W){
                     const T = target(phase), f = 1 - Math.exp(-dt * 3.5);
-                    thr = lerp(thr, (phase === 0 || phase === 5 ? 1 : 0, f);
+                    thr = lerp(thr, (phase === 0 || phase === 5) ? 1 : 0, f);
                     if(!cur)cur = JSON.parse(JSON.stringify(T));
                     else {
                         while(cur.ch.length > n)cur.ch.pop(); 
@@ -1342,7 +1343,7 @@
                 const col = 'hsl(' + hue(i) + ' 80% 62%)';
                 const pts = threadPts(c, i), lw = threadLW();
                 ctx.save();
-                ctx.globalAlpha = thr * am (dim ? 0.55 : 0.95);
+                ctx.globalAlpha = thr * am (dim ? 0.55 : 0.95) * fd;
                 ctx.beginPath();
                 pts.forEach((pt, s) => s ? ctx.lineTo(pt[0], pt[1]) : ctx.moveTo(pt[0], pt[1]));
                 ctx.lineCap = ctx.lineJoin = 'round';
