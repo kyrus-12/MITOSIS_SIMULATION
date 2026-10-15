@@ -1279,8 +1279,9 @@
                 let best = -1;
                 if(thr > 0.5){
                     let bd = Math.max(9, threadLW() * 3);
-                    cur.ch.forEach((pr, i) => {
-                        const pts = threadPts(pr[0], i);
+                    cur.ch.forEach((pr, i) => pr.forEach((c, ci) => {
+                        if(ci && cur.n2 < 0.5) return;
+                        const pts = threadPts(c, i, ci);
                         for(let s = 0; s < pts.length - 1; s++){
                             const d = segDist(mx, my, pts[s], pts[s + 1]);
                             if(d < bd){
@@ -1289,9 +1290,7 @@
                             }
                         }
                     });
-                    return best;
-
-                                          
+                    return best;                                          
                 } 
                 let bd = Math.max(0.25 * R * scl(), 16);
                 cur.ch.forEach((pr, i) => pr.forEach(c => {
@@ -1345,7 +1344,7 @@
                 const col = 'hsl(' + hue(i) + ' 80% 62%)';
                 const pts = threadPts(c, i, ci), lw = threadLW();
                 ctx.save();
-                ctx.globalAlpha = thr * (dim ? 0.55 : 0.95);
+                ctx.globalAlpha = thr * am * (dim ? 0.55 : 0.95);
                 ctx.beginPath();
                 pts.forEach((pt, s) => s ? ctx.lineTo(pt[0], pt[1]) : ctx.moveTo(pt[0], pt[1]));
                 ctx.lineCap = ctx.lineJoin = 'round';
@@ -1362,7 +1361,7 @@
                 ctx.stroke();
                 const cyc = ((t + i * 0.7) % 10) / 10, rp = clamp01((cyc - 0.1) / 0.55), fd = cyc > 0.9 ? (1 - cyc) / 0.1 : 1;
                 if(rp > 0){
-                    const o = 0.02 * R, n2 = Math.max(2, Math.round(rp * pts.length));ctx.globalAlpha = thr * am (dim ? 0.55 : 0.95) * fd;
+                    const o = 0.02 * R, n2 = Math.max(2, Math.round(rp * pts.length));ctx.globalAlpha = thr * am * (dim ? 0.55 : 0.95) * fd;
                     ctx.beginPath();
                     pts.slice(0, n2).forEach((pt, s) => s ? ctx.lineTo(pt[0] + o, pt[1] + o) : ctx.moveTo(pt[0] + o, pt[1] + o));
                     ctx.strokeStyle = 'hsl(' + hue(i) + ' 85% 70%)';
