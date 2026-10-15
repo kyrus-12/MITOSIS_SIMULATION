@@ -1998,7 +1998,7 @@
                 drawCleave();
             }).observe(board);
 
-            $('#pal').innerHTML = ['cell', 'nuc', 'cen', 'chr'].map(t => '<div class="prow"><b><i class="ic ic-' + t + '"></i>' + LBL[t] + '</b><div class="pbtn"><button class="btn" data-t="' + t + '" data-d="-1">\u2212</button><span id="pc-' + t + '">0</span><button class="btn" data-t="' + t + '" data-d="1">+</button></div></div>').join('') + '<p class="phint">Note: Once the workspace is playing some functions or features inside are not functional. Pause the workspace first then edit your cell.</p>';
+            $('#pal').innerHTML = ['cell', 'nuc', 'cen', 'chr'].map(t => '<div class="prow"><b><i class="ic ic-' + t + '"></i>' + LBL[t] + '</b><div class="pbtn"><button class="btn" data-t="' + t + '" data-d="-1">\u2212</button><span id="pc-' + t + '">0</span><button class="btn" data-t="' + t + '" data-d="1">+</button></div></div>').join('') + '<p class="phint"><b>Note:<br> • Once the workspace is playing some functions or features inside are not functional. Pause "❚❚" the workspace first then edit your cell.<br><br> • To check if your arrangement for every phase is correct, kindly click the "🔚" icon, and set the chromosome number based from the given problem.</b></p>';
             $('#pal').addEventListener('click', e => {
                 const b = e.target.closest('button');
                 if(b) setB(b.dataset.t, cnt(b.dataset.t) + +b.dataset.d)
