@@ -1220,17 +1220,18 @@
                 });
                 const order = [...S.ch.keys()].filter(i => i !== sel).concat(sel >= 0 ? [sel] : []);
                 order.forEach(i => {
-                    if(thr > 0.02) thread(S.ch[i][0], i, i === sel, sel >= 0 && i !== sel);
-                    S.ch[i].forEach((c, k) => chromatid(c, i, k, i === sel, sel >= 0 && i !== sel))
+                    if(thr > 0.02){
+                        thread(S.ch[i][0], i, i === sel, sel >= 0 && i !== sel);
+                        if(S.n2 > 0.02) thread(S.ch[i][1], i, i === sel, sel >= 0 && i !== sel, 1, S.n2);
+                    }
                 });
-
                 const pr = sel >= 0 ? S.ch[sel] : null, sep = pr && Math.hypot(pr[0].x - pr[1].x, pr[0].y - pr[1].y) > 0.3 * u;
-                if(pr)(sep ? pr : [pr[0]]).forEach(c0 => {
+                if(pr)(sep ? pr : [pr[0]]).forEach(c0, ci => {
                     let c = c0;
                     const [dx, dy] = drift(sel, 0);
                     let r = Math.max(0.22 * u * scl(), 14) + Math.sin(t * 4) * 3;
                     if(thr > 0.5){
-                        const tp = threadPts(c0, sel), mx = tp.reduce((a, q) => a + q[0], 0) / tp.length, my = tp.reduce((a, q) => a + q[1], 0) / tp.length;
+                        const tp = threadPts(c0, sel, ci), mx = tp.reduce((a, q) => a + q[0], 0) / tp.length, my = tp.reduce((a, q) => a + q[1], 0) / tp.length;
                         c = {x : mx - dx, y : my - dy};
                         r = Math.max(...tp.map(q => Math.hypot(q[0] - mx, q[1] - my))) + 10 + Math.sin(t * 4) * 2;
                      }
@@ -1251,7 +1252,7 @@
                 const dt = Math.min(0.05, (now- last) / 1000); last = now; t += dt;
                 if(W){
                     const T = target(phase), f = 1 - Math.exp(-dt * 3.5);
-                    thr = lerp(thr, phase === 0 ? 1 : 0, f);
+                    thr = lerp(thr, (phase === 0 || phase === 5 ? 1 : 0, f);
                     if(!cur)cur = JSON.parse(JSON.stringify(T));
                     else {
                         while(cur.ch.length > n)cur.ch.pop(); 
@@ -1316,8 +1317,9 @@
                 return Math.max(1.5, 0.02 * R * Math.min(1, 2 / Math.sqrt(n)));
             }
 
-            function threadPts(c, i){
+            function threadPts(c, i, ci = 0){
                 const u = R, [dx, dy] = drift(i, 0), k = 0.35 + 0.65 * thr, TP = 6.2832;
+                const ns = cur ? Math.min(1, cur.nr / (0.64 * u)) : 1, ncx = W / 2 + (ci ? 1 : -1) * (cur ? cur.nOff : 0), ncy = H / 2;
                 const f1 = 2.3 + 0.4 * ((i * 7) % 3), f2 = 5.4 + 0.4 * ((i * 5) % 4), f3 = 9.2 + 0.5 * ((i * 3) % 5);
                 const g1 = 3.3 + 0.4 * ((i * 5) % 3), g2 = 6.4 + 0.4 * ((i * 3) % 4), g3 = 10.2 + 0.5 * ((i * 7) % 4);              
                 const am = lerp(1, Math.min(1, 2.4 / Math.sqrt(n)), Math.max(0, Math.min(1, (1 - ns) / 0.41)));
@@ -1336,11 +1338,11 @@
                 return pts;
             }
 
-            function thread(c, i, hl, dim){
+            function thread(c, i, hl, dim, ci = 0, am = 1){
                 const col = 'hsl(' + hue(i) + ' 80% 62%)';
                 const pts = threadPts(c, i), lw = threadLW();
                 ctx.save();
-                ctx.globalAlpha = thr * (dim ? 0.55 : 0.95);
+                ctx.globalAlpha = thr * am (dim ? 0.55 : 0.95);
                 ctx.beginPath();
                 pts.forEach((pt, s) => s ? ctx.lineTo(pt[0], pt[1]) : ctx.moveTo(pt[0], pt[1]));
                 ctx.lineCap = ctx.lineJoin = 'round';
