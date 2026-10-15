@@ -1360,8 +1360,9 @@
                 ctx.lineWidth = lw;
                 ctx.stroke();
                 const cyc = ((t + i * 0.7) % 10) / 10, rp = clamp01((cyc - 0.1) / 0.55), fd = cyc > 0.9 ? (1 - cyc) / 0.1 : 1;
-                if(rp > 0){
-                    const o = 0.02 * R, n2 = Math.max(2, Math.round(rp * pts.length));ctx.globalAlpha = thr * am * (dim ? 0.55 : 0.95) * fd;
+                const dupW = 1 - (cur ? cur.n2 : 0);
+                if(rp > 0 && dupW > 0.02){
+                    const o = 0.02 * R, n2 = Math.max(2, Math.round(rp * pts.length));ctx.globalAlpha = thr * am * (dim ? 0.55 : 0.95) * fd * dupW;
                     ctx.beginPath();
                     pts.slice(0, n2).forEach((pt, s) => s ? ctx.lineTo(pt[0] + o, pt[1] + o) : ctx.moveTo(pt[0] + o, pt[1] + o));
                     ctx.strokeStyle = 'hsl(' + hue(i) + ' 85% 70%)';
@@ -1750,7 +1751,7 @@
             }
 
             function redoThreads(e){
-                e.querySelector('svg').innerHTML = chrSvg(hue(e.k), 0, 0, e.k)
+                e.querySelector('svg').innerHTML = chrSvg(hue(e.k), phase, 0, e.k)
             }
 
             function chrSvg(h, ph, sd, k){
@@ -1764,7 +1765,7 @@
                             const en = i === 0 || i === sh[st].length - 1;
                             return '<circle class="hd" data-st="' + st + '" data-i="' + i + '" cx="' + q[0] +'" cy="' + q[1] + '" r="' + (en ? 5.5 : 4) + '" fill="' + (en ? c : '#fff') + '" stroke="' + dk + '" stroke-width="1.5"/>'
                         }).join('');
-                        return p(smoothD(sh.a), a, 2.4, 'data-st="a"') + p(smoothD(sh.b), b, 2.4, 'class="rep"  pathLength="100" data-st="b"') + hs('b', b) + hs('a', a);
+                        return p(smoothD(sh.a), a, 2.4, 'data-st="a"') + (ph === 5 ? '' : p(smoothD(sh.b), b, 2.4, 'class="rep"  pathLength="100" data-st="b"') + hs('b', b)) + hs('a', a);
                     })(),
                     p('M11 6Q19 30 29 54', a, 6) + p('M29, 6Q21, 30, 11, 54', b, 6) + dot(20, 30),
                     p('M12 12L28 48', a, 8) + p('M28, 12L12, 48', b, 8) + dot(20, 30),
