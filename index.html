@@ -922,7 +922,7 @@
                 Q.forEach((qs, p) => qs.forEach((q, i) => { tot++; if ((ans[n+'|'+p+'|'+i] || {}).ok)all++}));
                 const done = here === Q[phase].length;
                 $('#fb').className = done ? 'done' : '';
-                $('#fbm').textContent = done ? (phase < 5 ? 'Phase complete! Try '+PH[phase + 1].n+' next. 🥹' : 'All phases done! Try another chromosome number. 🥳') : here+' of '+Q[phase].length+ ' correct. Answers are checked automatically.';
+                $('#fbm').textContent = done ? (phase < 5 ? 'Phase complete! Try '+PH[phase + 1].n+' next. 🤗' : 'All phases done! Try another chromosome number. 🥳') : here+' of '+Q[phase].length+ ' correct. Answers are checked automatically.';
                 $('#score').textContent = all + ' / '+tot;
             }
 
